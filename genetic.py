@@ -1,5 +1,6 @@
 import random
 from typing import List
+from hwcounter import Timer, count, count_end
 
 
 class Item:
@@ -42,6 +43,7 @@ MUTATION_RATE = 0.013
 REPRODUCTION_RATE = 0.15
 MAX_INITAL_POPULATION = 100
 MAX_CONTENDERS_FOR_TOURNAMENT = 50
+NUMBER_OF_GENERATIONS = 500
 
 items = [
     Item("A", 7, 5),
@@ -148,15 +150,18 @@ def average_fitness(population: List[Individual]) -> float:
 
 
 def solve_knapsack() -> Individual:
+    start = count()
     population = generate_initial_population()
 
     avg_fitnesses = []
 
-    for _ in range(500):
+    for _ in range(NUMBER_OF_GENERATIONS):
         avg_fitnesses.append(average_fitness(population))
         population = next_generation(population)
 
     population = sorted(population, key=lambda i: i.fitness(), reverse=True)
+    elapsed = count_end() - start
+    print(f'elapsed cycles: {elapsed}')
     return population[0]
 
 
