@@ -12,13 +12,13 @@ class Item:
 class Individual:
     def __init__(self, bits: List[int]):
         self.bits = bits
-    
+
     def __str__(self):
         return repr(self.bits)
 
     def __hash__(self):
         return hash(str(self.bits))
-    
+
     def fitness(self) -> float:
         total_value = sum([
             bit * item.value
@@ -32,7 +32,7 @@ class Individual:
 
         if total_weight <= MAX_KNAPSACK_WEIGHT:
             return total_value
-        
+
         return 0
 
 
@@ -40,6 +40,7 @@ MAX_KNAPSACK_WEIGHT = 15
 CROSSOVER_RATE = 0.53
 MUTATION_RATE = 0.013
 REPRODUCTION_RATE = 0.15
+MAX_INITAL_COUNT = 6
 
 items = [
     Item("A", 7, 5),
@@ -49,13 +50,13 @@ items = [
 ]
 
 
-def generate_initial_population(count=6) -> List[Individual]:
+def generate_initial_population(count=MAX_INITAL_COUNT) -> List[Individual]:
     population = set()
 
     # generate initial population having `count` individuals
     while len(population) != count:
-        # pick random bits one for each item and 
-        # create an individual 
+        # pick random bits one for each item and
+        # create an individual
         bits = [
             random.choice([0, 1])
             for _ in items
@@ -67,7 +68,7 @@ def generate_initial_population(count=6) -> List[Individual]:
 
 def selection(population: List[Individual]) -> List[Individual]:
     parents = []
-    
+
     # randomly shuffle the population
     random.shuffle(population)
 
@@ -80,7 +81,7 @@ def selection(population: List[Individual]) -> List[Individual]:
         parents.append(population[0])
     else:
         parents.append(population[1])
-    
+
     # tournament between third and fourth
     if population[2].fitness() > population[3].fitness():
         parents.append(population[2])
@@ -122,7 +123,7 @@ def next_generation(population: List[Individual]) -> List[Individual]:
             # crossover
             if random.random() < CROSSOVER_RATE:
                 children = crossover(parents)
-            
+
             # mutation
             if random.random() < MUTATION_RATE:
                 mutate(children)
@@ -136,7 +137,8 @@ def print_generation(population: List[Individual]):
     for individual in population:
         print(individual.bits, individual.fitness())
     print()
-    print("Average fitness", sum([x.fitness() for x in population])/len(population))
+    print("Average fitness", sum([x.fitness()
+          for x in population])/len(population))
     print("-" * 32)
 
 
