@@ -1,6 +1,7 @@
 import random
 from typing import List
-from hwcounter import Timer, count, count_end
+# from hwcounter import Timer, count, count_end
+import time
 
 
 class Item:
@@ -150,7 +151,8 @@ def average_fitness(population: List[Individual]) -> float:
 
 
 def solve_knapsack() -> Individual:
-    start = count()
+    # start = count()
+    start = time.clock() 
     population = generate_initial_population()
 
     avg_fitnesses = []
@@ -160,8 +162,10 @@ def solve_knapsack() -> Individual:
         population = next_generation(population)
 
     population = sorted(population, key=lambda i: i.fitness(), reverse=True)
-    elapsed = count_end() - start
-    print(f'elapsed cycles: {elapsed}')
+    # elapsed = count_end() - start
+    end = time.clock() 
+    # print(f'elapsed cycles: {elapsed}')
+    print("Time elapsed during the calculation:", end - start)  
     return population[0]
 
 
