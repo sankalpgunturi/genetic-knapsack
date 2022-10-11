@@ -40,17 +40,24 @@ MAX_KNAPSACK_WEIGHT = 15
 CROSSOVER_RATE = 0.53
 MUTATION_RATE = 0.013
 REPRODUCTION_RATE = 0.15
-MAX_INITAL_COUNT = 6
+MAX_INITAL_POPULATION = 100
+MAX_CONTENDERS_FOR_TOURNAMENT = 50
 
 items = [
     Item("A", 7, 5),
     Item("B", 2, 4),
     Item("C", 1, 7),
-    Item("D", 9, 2)
+    Item("D", 9, 2),
+    Item("E", 3, 6),
+    Item("F", 4, 3),
+    Item("G", 6, 1),
+    Item("H", 8, 9),
+    Item("I", 5, 9),
+    Item("J", 10, 2)
 ]
 
 
-def generate_initial_population(count=MAX_INITAL_COUNT) -> List[Individual]:
+def generate_initial_population(count=MAX_INITAL_POPULATION) -> List[Individual]:
     population = set()
 
     # generate initial population having `count` individuals
@@ -72,21 +79,15 @@ def selection(population: List[Individual]) -> List[Individual]:
     # randomly shuffle the population
     random.shuffle(population)
 
-    # we use the first 4 individuals
+    # we use the first MAX_CONTENDERS_FOR_TOURNAMENT individuals
     # run a tournament between them and
     # get two fit parents for the next steps of evolution
 
-    # tournament between first and second
-    if population[0].fitness() > population[1].fitness():
-        parents.append(population[0])
-    else:
-        parents.append(population[1])
-
-    # tournament between third and fourth
-    if population[2].fitness() > population[3].fitness():
-        parents.append(population[2])
-    else:
-        parents.append(population[3])
+    for population_index in range(0, MAX_CONTENDERS_FOR_TOURNAMENT - 1):
+        if population[population_index].fitness() > population[population_index + 1].fitness():
+            parents.append(population[population_index])
+        else:
+            parents.append(population[population_index + 1])
 
     return parents
 
