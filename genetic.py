@@ -1,7 +1,8 @@
 import random
 from typing import List
 # from hwcounter import Timer, count, count_end
-import time
+# import time
+from pypapi import events, papi_high as high
 
 
 class Item:
@@ -42,9 +43,9 @@ MAX_KNAPSACK_WEIGHT = 15
 CROSSOVER_RATE = 0.53
 MUTATION_RATE = 0.013
 REPRODUCTION_RATE = 0.15
+NUMBER_OF_GENERATIONS = 500
 MAX_INITAL_POPULATION = 100
 MAX_CONTENDERS_FOR_TOURNAMENT = 50
-NUMBER_OF_GENERATIONS = 500
 
 items = [
     Item("A", 7, 5),
@@ -56,7 +57,11 @@ items = [
     Item("G", 6, 1),
     Item("H", 8, 9),
     Item("I", 5, 9),
-    Item("J", 10, 2)
+    Item("J", 10, 2),
+    # Item("K", 1, 3),
+    # Item("L", 2, 10),
+    # Item("M", 3, 1),
+    # Item("N", 9, 7),
 ]
 
 
@@ -153,6 +158,8 @@ def average_fitness(population: List[Individual]) -> float:
 def solve_knapsack() -> Individual:
     # start = count()
     start = time.clock() 
+    # high.start_counters([events.PAPI_FP_OPS,])
+
     population = generate_initial_population()
 
     avg_fitnesses = []
@@ -162,10 +169,14 @@ def solve_knapsack() -> Individual:
         population = next_generation(population)
 
     population = sorted(population, key=lambda i: i.fitness(), reverse=True)
+
     # elapsed = count_end() - start
     end = time.clock() 
+    # x=high.stop_counters()
+
     # print(f'elapsed cycles: {elapsed}')
     print("Time elapsed during the calculation:", end - start)  
+    # print("Time elapsed during the calculation:", x) 
     return population[0]
 
 
