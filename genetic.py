@@ -2,7 +2,8 @@ import random
 from typing import List
 # from hwcounter import Timer, count, count_end
 # import time
-from pypapi import events, papi_high as high
+# from pypapi import events, papi_high as high
+import rdtsc
 
 
 class Item:
@@ -45,7 +46,9 @@ MUTATION_RATE = 0.013
 REPRODUCTION_RATE = 0.15
 NUMBER_OF_GENERATIONS = 500
 MAX_INITAL_POPULATION = 100
-MAX_CONTENDERS_FOR_TOURNAMENT = 50
+
+#DON'T CHANGE THIS VALUE
+MAX_CONTENDERS_FOR_TOURNAMENT = 4
 
 items = [
     Item("A", 7, 5),
@@ -58,10 +61,6 @@ items = [
     Item("H", 8, 9),
     Item("I", 5, 9),
     Item("J", 10, 2),
-    # Item("K", 1, 3),
-    # Item("L", 2, 10),
-    # Item("M", 3, 1),
-    # Item("N", 9, 7),
 ]
 
 
@@ -86,12 +85,12 @@ def selection(population: List[Individual]) -> List[Individual]:
 
     # randomly shuffle the population
     random.shuffle(population)
-
+    
     # we use the first MAX_CONTENDERS_FOR_TOURNAMENT individuals
     # run a tournament between them and
     # get two fit parents for the next steps of evolution
 
-    for population_index in range(0, MAX_CONTENDERS_FOR_TOURNAMENT - 1):
+    for population_index in range(0, MAX_CONTENDERS_FOR_TOURNAMENT - 1, 2):
         if population[population_index].fitness() > population[population_index + 1].fitness():
             parents.append(population[population_index])
         else:
@@ -156,9 +155,7 @@ def average_fitness(population: List[Individual]) -> float:
 
 
 def solve_knapsack() -> Individual:
-    # start = count()
-    start = time.clock() 
-    # high.start_counters([events.PAPI_FP_OPS,])
+    start = rdtsc.get_cycles()
 
     population = generate_initial_population()
 
@@ -170,13 +167,9 @@ def solve_knapsack() -> Individual:
 
     population = sorted(population, key=lambda i: i.fitness(), reverse=True)
 
-    # elapsed = count_end() - start
-    end = time.clock() 
-    # x=high.stop_counters()
+    end = rdtsc.get_cycles()
 
-    # print(f'elapsed cycles: {elapsed}')
     print("Time elapsed during the calculation:", end - start)  
-    # print("Time elapsed during the calculation:", x) 
     return population[0]
 
 
