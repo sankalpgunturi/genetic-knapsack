@@ -1,7 +1,9 @@
 import random
 from typing import List
 # from hwcounter import Timer, count, count_end
-import time
+# import time
+# from pypapi import events, papi_high as high
+import rdtsc
 
 
 class Item:
@@ -42,9 +44,11 @@ MAX_KNAPSACK_WEIGHT = 15
 CROSSOVER_RATE = 0.53
 MUTATION_RATE = 0.013
 REPRODUCTION_RATE = 0.15
-MAX_INITAL_POPULATION = 100
-MAX_CONTENDERS_FOR_TOURNAMENT = 50
 NUMBER_OF_GENERATIONS = 500
+MAX_INITAL_POPULATION = 100
+
+#DON'T CHANGE THIS VALUE
+MAX_CONTENDERS_FOR_TOURNAMENT = 4
 
 items = [
     Item("A", 7, 5),
@@ -56,7 +60,7 @@ items = [
     Item("G", 6, 1),
     Item("H", 8, 9),
     Item("I", 5, 9),
-    Item("J", 10, 2)
+    Item("J", 10, 2),
 ]
 
 
@@ -81,12 +85,12 @@ def selection(population: List[Individual]) -> List[Individual]:
 
     # randomly shuffle the population
     random.shuffle(population)
-
+    
     # we use the first MAX_CONTENDERS_FOR_TOURNAMENT individuals
     # run a tournament between them and
     # get two fit parents for the next steps of evolution
 
-    for population_index in range(0, MAX_CONTENDERS_FOR_TOURNAMENT - 1):
+    for population_index in range(0, MAX_CONTENDERS_FOR_TOURNAMENT - 1, 2):
         if population[population_index].fitness() > population[population_index + 1].fitness():
             parents.append(population[population_index])
         else:
@@ -151,8 +155,8 @@ def average_fitness(population: List[Individual]) -> float:
 
 
 def solve_knapsack() -> Individual:
-    # start = count()
-    start = time.clock() 
+    start = rdtsc.get_cycles()
+
     population = generate_initial_population()
 
     avg_fitnesses = []
@@ -162,9 +166,9 @@ def solve_knapsack() -> Individual:
         population = next_generation(population)
 
     population = sorted(population, key=lambda i: i.fitness(), reverse=True)
-    # elapsed = count_end() - start
-    end = time.clock() 
-    # print(f'elapsed cycles: {elapsed}')
+
+    end = rdtsc.get_cycles()
+
     print("Time elapsed during the calculation:", end - start)  
     return population[0]
 
