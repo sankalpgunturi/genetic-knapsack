@@ -1,10 +1,6 @@
 import random
 from typing import List
-# from hwcounter import Timer, count, count_end
-# import time
-# from pypapi import events, papi_high as high
-import rdtsc
-
+import time
 
 class Item:
     def __init__(self, name, weight, value):
@@ -39,17 +35,19 @@ class Individual:
 
         return 0
 
-
+global time_elapsed
+# MACROS
 MAX_KNAPSACK_WEIGHT = 15
 CROSSOVER_RATE = 0.53
 MUTATION_RATE = 0.013
 REPRODUCTION_RATE = 0.15
-NUMBER_OF_GENERATIONS = 500
-MAX_INITAL_POPULATION = 100
+
+# Vary this for different results
+NUMBER_OF_GENERATIONS = 100
 
 #DON'T CHANGE THIS VALUE
+MAX_INITAL_POPULATION = 128
 MAX_CONTENDERS_FOR_TOURNAMENT = 4
-
 items = [
     Item("A", 7, 5),
     Item("B", 2, 4),
@@ -61,6 +59,8 @@ items = [
     Item("H", 8, 9),
     Item("I", 5, 9),
     Item("J", 10, 2),
+    Item("K", 5, 3),
+    Item("L", 3, 1),
 ]
 
 
@@ -79,23 +79,41 @@ def generate_initial_population(count=MAX_INITAL_POPULATION) -> List[Individual]
 
     return list(population)
 
+def computeFitness(population: List[Individual]) -> List[Individual]:
+    fitness_array = []
+    for population_index in range(0, len(population) - 1):
+        fitness_array.append(population[population_index].fitness())
 
-def selection(population: List[Individual]) -> List[Individual]:
+    return fitness_array
+
+
+def selection(population_before_shuffle: List[Individual]) -> List[Individual]:
+    global time_elapsed
     parents = []
 
-    # randomly shuffle the population
-    random.shuffle(population)
+    # randomly shuffle the population and fitness together
+    start = time.time()
+    fitness_before_shuffle = computeFitness(population_before_shuffle)
+    end = time.time()
+    time_elapsed += (end - start)
+
+    temp = list(zip(population_before_shuffle, fitness_before_shuffle))
+    random.shuffle(temp)
+    population, fitness_array = zip(*temp)
+    population, fitness_array = list(population), list(fitness_array)
     
     # we use the first MAX_CONTENDERS_FOR_TOURNAMENT individuals
     # run a tournament between them and
     # get two fit parents for the next steps of evolution
-
+    start = time.time()
     for population_index in range(0, MAX_CONTENDERS_FOR_TOURNAMENT - 1, 2):
-        if population[population_index].fitness() > population[population_index + 1].fitness():
+        if fitness_array[population_index] > fitness_array[population_index + 1]:
             parents.append(population[population_index])
         else:
             parents.append(population[population_index + 1])
 
+    end = time.time()
+    time_elapsed += (end - start)
     return parents
 
 
@@ -155,21 +173,23 @@ def average_fitness(population: List[Individual]) -> float:
 
 
 def solve_knapsack() -> Individual:
-    start = rdtsc.get_cycles()
+    global time_elapsed
 
     population = generate_initial_population()
 
     avg_fitnesses = []
 
+    time_elapsed = 0
     for _ in range(NUMBER_OF_GENERATIONS):
-        avg_fitnesses.append(average_fitness(population))
-        population = next_generation(population)
+        # avg_fitnesses.append(average_fitness(population))
+        _ = selection(population)
+        # population = next_generation(population)
 
-    population = sorted(population, key=lambda i: i.fitness(), reverse=True)
+    # population = sorted(population, key=lambda i: i.fitness(), reverse=True)
 
-    end = rdtsc.get_cycles()
+    print("Time:", time_elapsed)
+    print("FLOPS/sec:", (MAX_INITAL_POPULATION * MAX_CONTENDERS_FOR_TOURNAMENT * NUMBER_OF_GENERATIONS) / time_elapsed)
 
-    print("Time elapsed during the calculation:", end - start)  
     return population[0]
 
 
