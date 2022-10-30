@@ -13,6 +13,25 @@ static __inline__ unsigned long long rdtsc(void) {
   return ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 );
 }
 
+struct Item{
+  double weight, value; 
+  Item(double w, double v){
+    weight = w;
+    value = v;
+  } 
+  Item(){}
+}
+
+struct Individual{
+  double* representation;
+  double fitness;
+}
+
+void init(){
+   // initialize random populations
+   // 
+}
+
 int main(){
 
 
