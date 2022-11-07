@@ -1,36 +1,73 @@
-// SIMD version of genetic_baseline
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include "immintrin.h"
 
 #define NUMBER_OF_ITEMS 12
 #define MAX_KNAPSACK_WEIGHT 15
 #define SIZE_OF_INITIAL_POPULATION 256
 
+// double fitness(double *weights, double *values, double *representation)
+// {
+//     double totalWeight = 0;
+//     double totalValue = 0;
+//     for (int i = 0; i < NUMBER_OF_ITEMS; i++)
+//     {
+//         // FMA
+//         totalWeight += weights[i] * representation[i];
+//         totalValue += values[i] * representation[i];
+//     }
+//     if (totalWeight > MAX_KNAPSACK_WEIGHT)
+//     {
+//         // penalty: negative feedback
+//         return 0;
+//     }
+//     return totalValue;
+// }
+
+// 0101
+// double (64bits) -> 64 items,
+// double x, 2 ed (x>>63)
+// 0101 = x, x>>3, 0
+
 double fitness(double *weights, double *values, double *representation)
 {
-    double totalWeight = 0;
-    double totalValue = 0;
+    __m256d valuesSIMD = _mm256_loadu_pd(&values);
+    __m256d weightsSIMD = _mm256_loadu_pd(&weights);
+    __m256d representationSIMD = _mm256_loadu_pd(&representation);
+
+    __m256d totalWeight = _mm256_set_pd(0.0, 0.0, 0.0, 0.0);
+    __m256d totalValue = _mm256_set_pd(0.0, 0.0, 0.0, 0.0);
+
     for (int i = 0; i < NUMBER_OF_ITEMS; i++)
     {
-        // FMA
-        totalWeight += weights[i] * representation[i];
-        totalValue += values[i] * representation[i];
+        _mm256_fmadd_pd(weightsSIMD, representationSIMD, totalWeight);
+        _mm256_fmadd_pd(valuesSIMD, representationSIMD, totalValue);
     }
-    if (totalWeight > MAX_KNAPSACK_WEIGHT)
-    {
-        // penalty: negative feedback
-        return 0;
-    }
-    return totalValue;
 }
 
-double **selection(double *weights, double *values, double **initial_population)
+// double *selection(double *weights, double *values, double *initial_population)
+// {
+//     double *winners = (double *)malloc((SIZE_OF_INITIAL_POPULATION / 2) * sizeof(double));
+//     for (int i = 0; i < SIZE_OF_INITIAL_POPULATION; i += 2)
+//     {
+//         if (fitness(weights, values, initial_population[i]) > fitness(weights, values, initial_population[i + 1]))
+//         {
+//             winners[i / 2] = initial_population[i];
+//         }
+//         else
+//         {
+//             winners[i / 2] = initial_population[i + 1];
+//         }
+//     }
+//     return winners;
+// }
+
+double *selection(double *weights, double *values, double *initial_population)
 {
-    double **winners = (double **)malloc((SIZE_OF_INITIAL_POPULATION / 2) * sizeof(double));
+    double *winners = (double *)malloc((SIZE_OF_INITIAL_POPULATION / 2) * sizeof(double));
+
     for (int i = 0; i < SIZE_OF_INITIAL_POPULATION; i += 2)
     {
-        if (fitness(weights, values, initial_population[i]) > fitness(weights, values, initial_population[i + 1]))
+        result = _mm256_cmp_pd(fitness(weights, values, initial_population[i]), fitness(weights, values, initial_population[i + 1]), winnersSIMD);
+        if (result == 1)
         {
             winners[i / 2] = initial_population[i];
         }
@@ -39,59 +76,14 @@ double **selection(double *weights, double *values, double **initial_population)
             winners[i / 2] = initial_population[i + 1];
         }
     }
+
     return winners;
 }
 
-int main()
+void crossover_baseline()
 {
-    double *population;
-    int POPULATION_SIZE = 256;
-    posix_memalign((void **)&population, 64, 256 * sizeof(double));
-
-    srand(time(NULL));
-    for (int i = 0; i != POPULATION_SIZE; ++i)
-    {
-        for (int k = i; k != i + 12; ++k)
-        {
-            // int t = rand()%15;
-            // t = t % 5;
-
-            int t = 0 + (int)(rand() / (double)(RAND_MAX + 1.0) * (1 - 0 + 1));
-            population[k] = (double)t;
-            printf("%.2f \t", population[k]);
-        }
-        printf("\n");
-    }
-    double weights[12] = {4, 5, 4, 12, 9, 0, 3, 1, 15, 7, 8, 1};
-    double values[12] = {43, 89, 10, 2, 56, 78, 12, 34, 44, 9, 18, 0};
-    double **initial_population = (double **)malloc((SIZE_OF_INITIAL_POPULATION / 2) * sizeof(double *));
-
-    // TODO: Need to convert 2D Array to 1D in selection function or vice-versa
-    selection(weights, values, initial_population);
-
-    return 0;
 }
 
-// input n individuals(fitness array with length = n)
-// 256 items
-// representations: n * 256 bit (n rows, 4 columns)
-// void crossover(int n, double *fitness, double *representations)
-// {
-//     int m = 4;
-//     for (int i = 0; i < n; i += 2)
-//     {
-//         // load
-//         __m256d P1 = _mm256_load_pd(representations[i * 4]);
-//         __m256d P2 = _mm256_load_pd(representations[(i + 1) * 4]);
-//         // permute
-//         __m256d C1 = mm256_permute2f128_pd(P1, P2, (0 | (3 << 4)));
-//         __m256d C2 = mm256_permute2f128_pd(P1, P2, (1 | (2 << 4)));
-//         // load into memory
-//         _mm256_storeu_pd(&representations[i * 4], C1);
-//         _mm256_storeu_pd(&representations[(i + 1) * 4], C2);
-//     }
-// }
-
-// void mutation()
-// {
-// }
+void mutation_baseline()
+{
+}

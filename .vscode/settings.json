@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "__bit_reference": "c",
+    "chrono": "c",
+    "unordered_map": "c"
+  }
+}
