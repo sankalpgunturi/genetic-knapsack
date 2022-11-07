@@ -40,7 +40,6 @@ int main(){
   
   srand(time(NULL));
   
-  //CURRENT HARDCODED 256 indexes to choose from 4096 combinations
   int skip_index = 15;
   FILE *fp = fopen("POPULATION_4096.txt", "r");
 
