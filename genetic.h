@@ -45,6 +45,56 @@ void crossover_baseline()
 {
 }
 
-void mutation_baseline()
-{
+double *mutation_baseline(double *individuals)
+{   
+    // Row ordering of individuals
+    
+    double random_val = 1.5;
+    double MUTATION_RATE = 2;
+    
+    // _mm256_broadcast_sd > 
+
+    for (int i =0; i< 256; i+=2 ) {
+        //for (int j = 0; j < 12; j+=4) {
+            __m256d i1_1 = _mm256_loadu_pd(&individuals[i+0]);
+            __m256d i1_2 = _mm256_loadu_pd(&individuals[i+4]);
+            __m256d i1_3 = _mm256_loadu_pd(&individuals[i+8]);
+
+            
+            // if (_mm256_cmp_ps()) {
+            //    _mm256_xor_epi64();
+            // }
+            
+            _mm256_storeu_pd(&individuals[i+0], i1_1);
+            _mm256_storeu_pd(&individuals[i+4], i1_2);
+            _mm256_storeu_pd(&individuals[i+8], i1_3);
+
+            i2_1 = _mm256_loadu_pd(&individuals[i+12]);
+            i2_2 = _mm256_loadu_pd(&individuals[i+16]);
+            i2_3 = _mm256_loadu_pd(&individuals[i+20]);
+
+
+            // if (_mm256_cmp_ps()) {
+            //    _mm256_xor_epi64();
+            // }
+            
+
+            _mm256_storeu_pd(&individuals[i+12], i1_1);
+            _mm256_storeu_pd(&individuals[i+16], i1_2);
+            _mm256_storeu_pd(&individuals[i+20], i1_3);
+            
+            i3_1 = _mm256_loadu_pd(&individuals[i+24]);
+            i3_2 = _mm256_loadu_pd(&individuals[i+28]);
+            i3_3 = _mm256_loadu_pd(&individuals[i+32]);
+
+
+            // if (_mm256_cmp_ps()) {
+            //    _mm256_xor_epi64();
+            // }
+            
+
+            _mm256_storeu_pd(&individuals[i+24], i1_1);
+            _mm256_storeu_pd(&individuals[i+28], i1_2);
+            _mm256_storeu_pd(&individuals[i+32], i1_3);
+
 }
