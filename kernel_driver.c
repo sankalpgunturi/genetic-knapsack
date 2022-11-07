@@ -33,7 +33,42 @@ void init(){
 }
 
 int main(){
+  double *population;
+  int POPULATION_SIZE = 256;
+  int NUMBER_OF_ITEMS = 12;
+  posix_memalign((void**) &population, 64, POPULATION_SIZE * 12 * sizeof(double));
+  
+  srand(time(NULL));
+  
+  //CURRENT HARDCODED 256 indexes to choose from 4096 combinations
+  int skip_index = 15;
+  FILE *fp = fopen("POPULATION_4096.txt", "r");
+
+  if (fp == NULL){
+    printf("Couldn't open file\n");
+    return 0;
+  }
+
+  char buff[1]; 
 
 
+  for (int i = 0; i < POPULATION_SIZE * NUMBER_OF_ITEMS; i++){
+    if ( i == 0) {
+      for(int k =0; k < 12*14; k++) {
+        fscanf(fp, "%s", buff);
+      }
+      printf("\n");
+    } else if ( (i )% 12 == 0) {
+      //After every 12 items
+      for(int k =0; k < 12*14; k++) {
+        fscanf(fp, "%s", buff);
+      }printf("\n");
+    } 
+      fscanf(fp, "%s", buff);
+      //printf("i %d : %s\t", i, buff );
+      population[i] = buff[0] - 48.0;
+      printf("i %d, %f ", i, population[i]);
+
+  }
  return 0;
 }
