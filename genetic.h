@@ -1,11 +1,11 @@
 #include "immintrin.h"
 
-#define NUMBER_OF_ITEMS 12
-#define MAX_KNAPSACK_WEIGHT 15
-#define SIZE_OF_INITIAL_POPULATION 256
+// #define NUMBER_OF_ITEMS 12
+// #define MAX_KNAPSACK_WEIGHT 15
+// #define SIZE_OF_INITIAL_POPULATION 256
 
 //  TODO : Convert row major to column major
-__m256d fitness(double *weights, double *values, double *representation)
+__m256d fitness(double *weights, double *values_d, double *representation)
 {   
     // representation X representation:
     // COLUMN major order
@@ -17,10 +17,10 @@ __m256d fitness(double *weights, double *values, double *representation)
     // Algorithm
     // Broadcast weights
     // __m256d _mm256_broadcast_sd (double const * mem_addr)
-    
-    __m256d max_knapsack_weight = _mm256_broadcast_sd(15.0);
+    double const val = 15.0;
+    __m256d max_knapsack_weight = _mm256_broadcast_sd(&val);
     __m256d weight = _mm256_broadcast_sd(&weights[0]);
-    __m256d values = _mm256_broadcast_sd(&values[0]);
+    __m256d values = _mm256_broadcast_sd(&values_d[0]);
     __m256d i = _mm256_loadu_pd(&representation[0]); 
     __m256d total_weights = _mm256_fmadd_pd(i, weight, total_weights);
     __m256d total_values = _mm256_fmadd_pd(i, values, total_values);
@@ -39,17 +39,17 @@ __m256d fitness(double *weights, double *values, double *representation)
     
     // Broadcast values
 
-    __m256d values_2 = _mm256_broadcast_sd(&values[1]);
-    __m256d values_3 = _mm256_broadcast_sd(&values[2]);
-    __m256d values_4 = _mm256_broadcast_sd(&values[3]);
-    __m256d values_5 = _mm256_broadcast_sd(&values[4]);
-    __m256d values_6 = _mm256_broadcast_sd(&values[5]);
-    __m256d values_7 = _mm256_broadcast_sd(&values[6]);
-    __m256d values_8 = _mm256_broadcast_sd(&values[7]);
-    __m256d values_9 = _mm256_broadcast_sd(&values[8]);
-    __m256d values_10 = _mm256_broadcast_sd(&values[9]);
-    __m256d values_11 = _mm256_broadcast_sd(&values[10]);
-    __m256d values_12 = _mm256_broadcast_sd(&values[11]);
+    __m256d values_2 = _mm256_broadcast_sd(&values_d[1]);
+    __m256d values_3 = _mm256_broadcast_sd(&values_d[2]);
+    __m256d values_4 = _mm256_broadcast_sd(&values_d[3]);
+    __m256d values_5 = _mm256_broadcast_sd(&values_d[4]);
+    __m256d values_6 = _mm256_broadcast_sd(&values_d[5]);
+    __m256d values_7 = _mm256_broadcast_sd(&values_d[6]);
+    __m256d values_8 = _mm256_broadcast_sd(&values_d[7]);
+    __m256d values_9 = _mm256_broadcast_sd(&values_d[8]);
+    __m256d values_10 = _mm256_broadcast_sd(&values_d[9]);
+    __m256d values_11 = _mm256_broadcast_sd(&values_d[10]);
+    __m256d values_12 = _mm256_broadcast_sd(&values_d[11]);
     
     // // Broadcast MAX_KNAPSACK_WEIGHT
 
@@ -108,80 +108,131 @@ __m256d fitness(double *weights, double *values, double *representation)
 }
 
 
-double *selection(double *weights, double *values, double *initial_population)
-{
-    double *winners = (double *)malloc((SIZE_OF_INITIAL_POPULATION / 2) * sizeof(double));
+// double *selection(double *weights, double *values, double *initial_population)
+// {
+//     double *winners = (double *)malloc((SIZE_OF_INITIAL_POPULATION / 2) * sizeof(double));
+//     __m256d result;
+//     for (int i = 0; i < SIZE_OF_INITIAL_POPULATION; i += 2)
+//     {   
+//         result = _mm256_cmp_pd(fitness(&weights, &values, &initial_population[i]), fitness(&weights, &values, &initial_population[i + 1]), winnersSIMD);
+//         if (result == 1)
+//         {
+//             winners[i / 2] = initial_population[i];
+//         }
+//         else
+//         {
+//             winners[i / 2] = initial_population[i + 1];
+//         }
+//     }
 
-    for (int i = 0; i < SIZE_OF_INITIAL_POPULATION; i += 2)
-    {
-        result = _mm256_cmp_pd(fitness(weights, values, initial_population[i]), fitness(weights, values, initial_population[i + 1]), winnersSIMD);
-        if (result == 1)
-        {
-            winners[i / 2] = initial_population[i];
-        }
-        else
-        {
-            winners[i / 2] = initial_population[i + 1];
-        }
-    }
+//     return winners;
+// }
 
-    return winners;
-}
+// void crossover()
+// {
+// // }
+// void print(const __m256d v)
+// {
+//     printf(_mm256_extractf128_pd(v, 0));
+//     printf(_mm256_extractf128_pd(v, 1));
+//     printf(_mm256_extractf128_pd(v, 2));
+//     printf(_mm256_extractf128_pd(v, 3));
+// }
 
-void crossover_baseline()
-{
-}
-
-double *mutation_baseline(double *representation)
+double *mutation(double *representation, double MUTATION_RATE)
 {   
     // Row ordering of representation
-    
-    double random_val = 1.5;
-    double MUTATION_RATE = 2;
+//   for individual in individuals:
+//         for i in range(len(individual.bits)):
+//             if random.random() < MUTATION_RATE:
+//                 # Flip the bit
+//                 individual.bits[i] = ~individual.bits[i]
+    double const mr = MUTATION_RATE;
+    const int le_op = 1;
+    __m256d MUTATION_RATE_ =  _mm256_broadcast_sd(&mr) ;
 
-    // _mm256_broadcast_sd > 
+    double random_val0;
+    double random_val1;
+    double random_val2;
+    double random_val3;
 
     for (int i =0; i< 256; i+=2 ) {
         //for (int j = 0; j < 12; j+=4) {
+            
+            random_val0 = (rand() % (100 - 0))/100.00;
+            random_val1 = (rand() % (100 - 0))/100.00;
+            random_val2 = (rand() % (100 - 0))/100.00;
+            random_val3 = (rand() % (100 - 0))/100.00;
+            printf("\n RANDOM:");
+            printf(" %.2f  %.2f  %.2f  %.2f \n", random_val0, random_val1, random_val2, random_val3);
+
+            __m256d RANDOM = _mm256_set_pd(random_val3, random_val2, random_val1, random_val0);
             __m256d i1_1 = _mm256_loadu_pd(&representation[i+0]);
             __m256d i1_2 = _mm256_loadu_pd(&representation[i+4]);
             __m256d i1_3 = _mm256_loadu_pd(&representation[i+8]);
 
+            // printf(" %.2f  %.2f  %.2f  %.2f ",representation[i], representation[i+1], representation[i+2], representation[i+3]);
+            // printf(" %.2f  %.2f  %.2f  %.2f ",representation[i+4], representation[i+5], representation[i+6], representation[i+7]);
+            // printf(" %.2f  %.2f  %.2f  %.2f ",representation[i+8], representation[i+9], representation[i+10], representation[i+11]);
+
+            __m256d compare = _mm256_cmp_pd(RANDOM, MUTATION_RATE_, 14);
             
-            // if (_mm256_cmp_ps()) {
-            //    _mm256_xor_epi64();
-            // }
+            _mm256_storeu_pd(&representation[i+0], RANDOM);
+
+            _mm256_storeu_pd(&representation[i+4], MUTATION_RATE_);
+
+            _mm256_storeu_pd(&representation[i+8], compare);
+            //printf(" %.2f  %.2f  %.2f  %.2f ",compare[i], representation[i+1], representation[i+2], representation[i+3]);
+            // printf(" COMPARE : %d ",i);
+            // print(compare);
+            i1_1 = _mm256_xor_pd(compare, i1_1); 
+            i1_2 = _mm256_xor_pd(compare, i1_2);
+            i1_3 = _mm256_xor_pd(compare, i1_3);
             
-            _mm256_storeu_pd(&representation[i+0], i1_1);
-            _mm256_storeu_pd(&representation[i+4], i1_2);
-            _mm256_storeu_pd(&representation[i+8], i1_3);
+            // i_1  =  0 0 1 1
+            // rand0 = 1.14 1.25 1.75 1.09
+            // mutation_rate = 1.15 1.15 1.15 1.15
+            // compare = 0xFF 0 0 0xFF 
+            // 0 0 1 1
+            // i_1 = 1 0 1 0
+            
+            // _mm256_storeu_pd(&representation[i+0], i1_1);
+            // _mm256_storeu_pd(&representation[i+4], i1_2);
+            // _mm256_storeu_pd(&representation[i+8], i1_3);
+            
+            // _mm256_storeu_pd(&representation[i+4], i1_1);
+            // _mm256_storeu_pd(&representation[i+8], i1_2);
+            //_mm256_storeu_pd(&representation[i+8], i1_1);
 
-            i2_1 = _mm256_loadu_pd(&representation[i+12]);
-            i2_2 = _mm256_loadu_pd(&representation[i+16]);
-            i2_3 = _mm256_loadu_pd(&representation[i+20]);
+             
+            break;
+            // i2_1 = _mm256_loadu_pd(&representation[i+12]);
+            // i2_2 = _mm256_loadu_pd(&representation[i+16]);
+            // i2_3 = _mm256_loadu_pd(&representation[i+20]);
 
 
-            // if (_mm256_cmp_ps()) {
-            //    _mm256_xor_epi64();
-            // }
+            // // if (_mm256_cmp_ps()) {
+            // //    _mm256_xor_epi64();
+            // // }
             
 
-            _mm256_storeu_pd(&representation[i+12], i1_1);
-            _mm256_storeu_pd(&representation[i+16], i1_2);
-            _mm256_storeu_pd(&representation[i+20], i1_3);
+            // _mm256_storeu_pd(&representation[i+12], i1_1);
+            // _mm256_storeu_pd(&representation[i+16], i1_2);
+            // _mm256_storeu_pd(&representation[i+20], i1_3);
             
-            i3_1 = _mm256_loadu_pd(&representation[i+24]);
-            i3_2 = _mm256_loadu_pd(&representation[i+28]);
-            i3_3 = _mm256_loadu_pd(&representation[i+32]);
+            // i3_1 = _mm256_loadu_pd(&representation[i+24]);
+            // i3_2 = _mm256_loadu_pd(&representation[i+28]);
+            // i3_3 = _mm256_loadu_pd(&representation[i+32]);
 
 
-            // if (_mm256_cmp_ps()) {
-            //    _mm256_xor_epi64();
-            // }
+            // // if (_mm256_cmp_ps()) {
+            // //    _mm256_xor_epi64();
+            // // }
             
 
-            _mm256_storeu_pd(&representation[i+24], i1_1);
-            _mm256_storeu_pd(&representation[i+28], i1_2);
-            _mm256_storeu_pd(&representation[i+32], i1_3);
+            // _mm256_storeu_pd(&representation[i+24], i1_1);
+            // _mm256_storeu_pd(&representation[i+28], i1_2);
+            // _mm256_storeu_pd(&representation[i+32], i1_3);
 
+}
 }

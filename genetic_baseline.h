@@ -8,7 +8,7 @@
 #define MAX_KNAPSACK_WEIGHT 15
 #define SIZE_OF_INITIAL_POPULATION 256
 
-double fitness(double *weights, double *values, double *representation)
+double fitness_b(double *weights, double *values, double *representation)
 {
     double totalWeight = 0;
     double totalValue = 0;
@@ -26,7 +26,7 @@ double fitness(double *weights, double *values, double *representation)
     return totalValue;
 }
 
-double *selection(double *weights, double *values, double *initial_population)
+double *selection_b(double *weights, double *values, double *initial_population)
 {
     double *winners = (double *)malloc((SIZE_OF_INITIAL_POPULATION / 2) * sizeof(double));
     for (int i = 0; i < SIZE_OF_INITIAL_POPULATION; i += 2)
@@ -43,7 +43,7 @@ double *selection(double *weights, double *values, double *initial_population)
     return winners;
 }
 
-int *generate_random(int l, int r, int count)
+int *generate_random_b(int l, int r, int count)
 { // this will generate random number in range l and r
     int i;
     
