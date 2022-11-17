@@ -128,9 +128,41 @@ __m256d fitness(double *weights, double *values_d, double *representation)
 //     return winners;
 // }
 
-// void crossover()
-// {
-// // }
+
+void crossover(double* representation, int popSize, double* children)
+{
+// parents:
+// 0 1 0 1 1 0 | 1 0 0 0 0 0 
+// 1 1 1 1 1 1 | 0 0 0 1 1 1
+
+// children:
+// 0 1 0 1 1 0 | 0 0 0 1 1 1 
+// 1 1 1 1 1 1 | 1 0 0 0 0 0 
+
+for(int i=0; i<popSize; i+=2){
+    __m256d p_10 = _mm256_loadu_pd(&representation[i*12+0]);
+    __m256d p_11 = _mm256_loadu_pd(&representation[i*12+4]);
+    __m256d p_12 = _mm256_loadu_pd(&representation[i*12+8]);
+
+    __m256d p_20 = _mm256_loadu_pd(&representation[i*12+12]);
+    __m256d p_21 = _mm256_loadu_pd(&representation[i*12+16]);
+    __m256d p_22 = _mm256_loadu_pd(&representation[i*12+20]);
+
+    __m256d tmp_1 = _mm256_permute2f128_pd(p_11, p_21, 0|(3<<4));
+    __m256d tmp_2 = _mm256_permute2f128_pd(p_21, p_11, 0|(3<<4));
+
+    // first child
+    _mm256_storeu_pd(&children[i*12+0], p_10);
+    _mm256_storeu_pd(&children[i*12+4], tmp_1);
+    _mm256_storeu_pd(&children[i*12+8], p_12);
+
+    // second child
+    _mm256_storeu_pd(&children[i*12+12], p_20);
+    _mm256_storeu_pd(&children[i*12+16], tmp_2);
+    _mm256_storeu_pd(&children[i*12+20], p_22);
+}
+
+}
 // void print(const __m256d v)
 // {
 //     printf(_mm256_extractf128_pd(v, 0));
