@@ -47,8 +47,16 @@ double *convertColMajorSIMD(double *matrix, int rowNum, int colNum)
     return res;
 }
 
+double *fitness(double *weights, double *values, double *representation)
+{
+    for (int i = 0; i < SIZE_OF_INITIAL_POPULATION; i += 4)
+    {
+        
+    }
+}
+
 //  TODO : Convert row major to column major
-__m256d fitness(double *weights, double *values_d, double *representation)
+double *fitness(double *weights, double *values_d, double *representation)
 {
     // representation X representation:
     // COLUMN major order
@@ -103,6 +111,7 @@ __m256d fitness(double *weights, double *values_d, double *representation)
     // // Each fma is loading the corresponding individual bit at i and the broadcasted weight at i
     // // 12 such fmas to get 4 outputs
     // // i[0][0], i[1][0], i[2][0], i[3][0]* fma(weight[0])
+
     __m256d i_2 = _mm256_loadu_pd(&representation[4]);
     __m256d i_3 = _mm256_loadu_pd(&representation[8]);
     __m256d i_4 = _mm256_loadu_pd(&representation[16]);
@@ -153,7 +162,7 @@ double *selection(double *weights, double *values_d, double *initial_population)
     double *winners = (double *)malloc((SIZE_OF_INITIAL_POPULATION / 2) * sizeof(double));
     contenders = fitness(weights, values_d, initial_population);
 
-    for (int i = 0; i < SIZE_OF_INITIAL_POPULATION - 36; i++)
+    for (int i = 0; i < SIZE_OF_INITIAL_POPULATION; i += 40)
     {
         // 10 registers
         __m256 contenders_set_0 = _mm256_loadu_pd(&contenders[i]);
@@ -168,25 +177,25 @@ double *selection(double *weights, double *values_d, double *initial_population)
         __m256 contenders_set_9 = _mm256_loadu_pd(&contenders[i + 36]);
 
         // 5 registers
-        __m256 result_0 = _mm256_cmp_pd(contenders_set_0, contenders_set_4, 14);
-        __m256 result_1 = _mm256_cmp_pd(contenders_set_1, contenders_set_3, 14);
-        __m256 result_2 = _mm256_cmp_pd(contenders_set_2, contenders_set_5, 14);
-        __m256 result_3 = _mm256_cmp_pd(contenders_set_6, contenders_set_9, 14);
-        __m256 result_4 = _mm256_cmp_pd(contenders_set_8, contenders_set_7, 14);
+        __m256 result_0 = _mm256_cmp_pd(contenders_set_0, contenders_set_1, 14);
+        __m256 result_1 = _mm256_cmp_pd(contenders_set_2, contenders_set_3, 14);
+        __m256 result_2 = _mm256_cmp_pd(contenders_set_4, contenders_set_5, 14);
+        __m256 result_3 = _mm256_cmp_pd(contenders_set_6, contenders_set_7, 14);
+        __m256 result_4 = _mm256_cmp_pd(contenders_set_8, contenders_set_9, 14);
 
-        for (int j = 0; j < SIZE_OF_INITIAL_POPULATION / 2; j += 4)
+        for (int j = 0; j < SIZE_OF_INITIAL_POPULATION / 2; j += 2)
         {
             if (_mm256_movemask_pd(result_0) == 15)
             {
-                winners[j] = _mm256_loadu_pd(&contenders_set_0);
+                winners[j] = _mm256_loadu_pd(&initial_population[j]);
             }
             else
             {
-                winners[j] = _mm256_loadu_pd(&contenders_set_4);
+                winners[j] = _mm256_loadu_pd(&initial_population[j + 1]);
             }
         }
     }
-    return winners
+    return winners;
 }
 
 void crossover(double *representation, int popSize, double crossover_rate)
