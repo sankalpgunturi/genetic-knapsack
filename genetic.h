@@ -21,6 +21,7 @@ double* convertColMajor(double * matrix, int rowNum, int colNum){
 
 // specially for colNum = 12 (3 SIMD registers)
 double* convertColMajorSIMD(double* matrix, int rowNum, int colNum){
+    int SIZE_OF_INITIAL_POPULATION=256;
     double* res;
     posix_memalign((void*) &res, 64, rowNum * colNum * sizeof(double));
     
@@ -299,63 +300,58 @@ double *mutation(double *representation, double MUTATION_RATE)
 {   
     // Row ordering of representation
     double const mr = MUTATION_RATE;
-    __m256d MUTATION_RATE_ =  _mm256_broadcast_sd(&mr) ;
-
-    double random_val0;
-    double random_val1;
-    double random_val2;
-    double random_val3;
+    double random_val0, random_val1, random_val2, random_val3;
+    random_val0 = (rand() % (100 - 0))/100.00;
+    random_val1 = (rand() % (100 - 0))/100.00;
+    random_val2 = (rand() % (100 - 0))/100.00;
+    random_val3 = (rand() % (100 - 0))/100.00;
     __m256d ONES = _mm256_set_pd(1.0, 1.0, 1.0, 1.0);
-    for (int i =0; i< 256; i+=3 ) {
-            
-            random_val0 = (rand() % (100 - 0))/100.00;
-            random_val1 = (rand() % (100 - 0))/100.00;
-            random_val2 = (rand() % (100 - 0))/100.00;
-            random_val3 = (rand() % (100 - 0))/100.00;
-            __m256d RANDOM = _mm256_set_pd(random_val3, random_val2, random_val1, random_val0);
-            __m256d compare = _mm256_cmp_pd(RANDOM, MUTATION_RATE_, 2);
-            compare = _mm256_and_pd(compare, ONES);
-            
-            __m256d i1_1 = _mm256_loadu_pd(&representation[i+0]);
-            __m256d i1_2 = _mm256_loadu_pd(&representation[i+4]);
-            __m256d i1_3 = _mm256_loadu_pd(&representation[i+8]);
+    __m256d RANDOM, compare, i1_1, i1_2, i1_3, i1_4, i1_5, i1_6, i1_7, i1_8, i1_9, i1_10, i1_11, i1_12;
+    __m256d MUTATION_RATE_ =  _mm256_broadcast_sd(&mr);
 
+    RANDOM = _mm256_set_pd(random_val3, random_val2, random_val1, random_val0);
+    
+    for (int i =0; i< 256; i+=4 ) {
+        compare = _mm256_cmp_pd(RANDOM, MUTATION_RATE_, 2);
+        compare = _mm256_and_pd(compare, ONES);
+        i1_1 = _mm256_loadu_pd(&representation[i+0]);
+        i1_2 = _mm256_loadu_pd(&representation[i+4]);
+        i1_3 = _mm256_loadu_pd(&representation[i+8]);
+        i1_4 = _mm256_loadu_pd(&representation[i+12]);
+        i1_5 = _mm256_loadu_pd(&representation[i+16]);
+        i1_6 = _mm256_loadu_pd(&representation[i+20]);
+        i1_7 = _mm256_loadu_pd(&representation[i+24]);
+        i1_8 = _mm256_loadu_pd(&representation[i+28]);
+        i1_9 = _mm256_loadu_pd(&representation[i+32]);
+        i1_10 = _mm256_loadu_pd(&representation[i+36]);
+        i1_11 = _mm256_loadu_pd(&representation[i+40]);
+        i1_12 = _mm256_loadu_pd(&representation[i+44]);
 
-            __m256d i1_4 = _mm256_loadu_pd(&representation[i+12]);
-            __m256d i1_5 = _mm256_loadu_pd(&representation[i+16]);
-            __m256d i1_6 = _mm256_loadu_pd(&representation[i+20]);
+        i1_1 = _mm256_xor_pd(compare, i1_1); 
+        i1_2 = _mm256_xor_pd(compare, i1_2);
+        i1_3 = _mm256_xor_pd(compare, i1_3);
+        i1_4 = _mm256_xor_pd(compare, i1_4); 
+        i1_5 = _mm256_xor_pd(compare, i1_5);
+        i1_6 = _mm256_xor_pd(compare, i1_6);
+        i1_7 = _mm256_xor_pd(compare, i1_7); 
+        i1_8 = _mm256_xor_pd(compare, i1_8);
+        i1_9 = _mm256_xor_pd(compare, i1_9);
+        i1_10 = _mm256_xor_pd(compare, i1_10);
+        i1_11 = _mm256_xor_pd(compare, i1_11);
+        i1_12 = _mm256_xor_pd(compare, i1_12);
 
-            __m256d i1_7 = _mm256_loadu_pd(&representation[i+24]);
-            __m256d i1_8 = _mm256_loadu_pd(&representation[i+28]);
-            __m256d i1_9 = _mm256_loadu_pd(&representation[i+32]);
-
-            i1_1 = _mm256_xor_pd(compare, i1_1); 
-            i1_2 = _mm256_xor_pd(compare, i1_2);
-            i1_3 = _mm256_xor_pd(compare, i1_3);
-            i1_4 = _mm256_xor_pd(compare, i1_4); 
-            i1_5 = _mm256_xor_pd(compare, i1_5);
-            i1_6 = _mm256_xor_pd(compare, i1_6);
-            i1_7 = _mm256_xor_pd(compare, i1_7); 
-            i1_8 = _mm256_xor_pd(compare, i1_8);
-            i1_9 = _mm256_xor_pd(compare, i1_9);
-            
-            // i_1  =  0 0 1 1
-            // rand0 = 1.14 1.25 1.75 1.09
-            // mutation_rate = 1.15 1.15 1.15 1.15
-            // compare =  
-            // compare = 0xFF 0 0 0xFF 
-            // 0 0 1 1
-            // i_1 = 1 0 1 0
-            
-            _mm256_storeu_pd(&representation[i], i1_1);
-            _mm256_storeu_pd(&representation[i+4], i1_2);
-            _mm256_storeu_pd(&representation[i+8], i1_3);
-            _mm256_storeu_pd(&representation[i+12], i1_4);
-            _mm256_storeu_pd(&representation[i+16], i1_5);
-            _mm256_storeu_pd(&representation[i+20], i1_6);
-            _mm256_storeu_pd(&representation[i+24], i1_7);
-            _mm256_storeu_pd(&representation[i+28], i1_8);
-            _mm256_storeu_pd(&representation[i+32], i1_9);
+        _mm256_storeu_pd(&representation[i], i1_1);
+        _mm256_storeu_pd(&representation[i+4], i1_2);
+        _mm256_storeu_pd(&representation[i+8], i1_3);
+        _mm256_storeu_pd(&representation[i+12], i1_4);
+        _mm256_storeu_pd(&representation[i+16], i1_5);
+        _mm256_storeu_pd(&representation[i+20], i1_6);
+        _mm256_storeu_pd(&representation[i+24], i1_7);
+        _mm256_storeu_pd(&representation[i+28], i1_8);
+        _mm256_storeu_pd(&representation[i+32], i1_9);
+        _mm256_storeu_pd(&representation[i+36], i1_10);
+        _mm256_storeu_pd(&representation[i+40], i1_11);
+        _mm256_storeu_pd(&representation[i+44], i1_12);
 
 
     }
