@@ -1,9 +1,30 @@
 #include "immintrin.h"
 
-// #define NUMBER_OF_ITEMS 12
-// #define MAX_KNAPSACK_WEIGHT 15
-// #define SIZE_OF_INITIAL_POPULATION 256
+#define NUMBER_OF_ITEMS 12
+#define MAX_KNAPSACK_WEIGHT 15
+#define SIZE_OF_INITIAL_POPULATION 256
 
+
+double* convertColMajor(double * matrix, int rowNum, int colNum){
+    // [256][12]
+    double* res;
+    posix_memalign((void*) &res, 64, rowNum * colNum * sizeof(double));
+    
+    for(int j=0; j < colNum; j++){
+        for(int i=0;i < rowNum; i++){
+            res[rowNum*j+i] = matrix[i*colNum +j];
+            // matrix[i*SIZE_OF_INITIAL_POPULATION + j];
+            // int offset1 = i*SIZE_OF_INITIAL_POPULATION;
+            // int offset2 = (i+1)*SIZE_OF_INITIAL_POPULATION;
+            // int offset3 = (i+2)*SIZE_OF_INITIAL_POPULATION;
+            // int offset4 = (i+3)*SIZE_OF_INITIAL_POPULATION;
+            // __m256d ymm0 = _mm256_set_pd(matrix[offset1 + j], matrix[offset2 + j], matrix[offset3 + j], matrix[offset4 + j]);
+            // TODO: try to use SIMD
+        }
+    }
+   
+   return res;
+}
 //  TODO : Convert row major to column major
 __m256d fitness(double *weights, double *values_d, double *representation)
 {   
@@ -17,7 +38,7 @@ __m256d fitness(double *weights, double *values_d, double *representation)
     // Algorithm
     // Broadcast weights
     // __m256d _mm256_broadcast_sd (double const * mem_addr)
-    double const val = 15.0;
+    double const val = MAX_KNAPSACK_WEIGHT;
     __m256d max_knapsack_weight = _mm256_broadcast_sd(&val);
     __m256d weight = _mm256_broadcast_sd(&weights[0]);
     __m256d values = _mm256_broadcast_sd(&values_d[0]);
@@ -128,7 +149,7 @@ __m256d fitness(double *weights, double *values_d, double *representation)
 //     return winners;
 // }
 
-void crossover(double* representation, int popSize, double* children, double crossover_rate)
+void crossover(double* representation, int popSize, double crossover_rate)
 {
 
     __m256d CROSS_RATE =  _mm256_broadcast_sd(&crossover_rate);
@@ -162,7 +183,7 @@ for(int i=0; i<popSize; i+=2){
     // if rate < cross_rate, 1111, else 0000
     // printf("%f ", cmp[(i/2)%4]);
     if(cmp[(i/2)%4] != 0){
-    cnt1++;
+
     __m256d p_10 = _mm256_loadu_pd(&representation[i*12+0]);
     __m256d p_11 = _mm256_loadu_pd(&representation[i*12+4]);
     __m256d p_12 = _mm256_loadu_pd(&representation[i*12+8]);
@@ -175,14 +196,14 @@ for(int i=0; i<popSize; i+=2){
     __m256d tmp_2 = _mm256_permute2f128_pd(p_21, p_11, 0|(3<<4));
 
     // first child
-    _mm256_storeu_pd(&children[i*12+0], p_10);
-    _mm256_storeu_pd(&children[i*12+4], tmp_1);
-    _mm256_storeu_pd(&children[i*12+8], p_12);
+    _mm256_storeu_pd(&representation[i*12+0], p_10);
+    _mm256_storeu_pd(&representation[i*12+4], tmp_1);
+    _mm256_storeu_pd(&representation[i*12+8], p_12);
 
     // second child
-    _mm256_storeu_pd(&children[i*12+12], p_20);
-    _mm256_storeu_pd(&children[i*12+16], tmp_2);
-    _mm256_storeu_pd(&children[i*12+20], p_22);
+    _mm256_storeu_pd(&representation[i*12+12], p_20);
+    _mm256_storeu_pd(&representation[i*12+16], tmp_2);
+    _mm256_storeu_pd(&representation[i*12+20], p_22);
     
     }
     else{
@@ -198,14 +219,14 @@ for(int i=0; i<popSize; i+=2){
 
 
     // first child
-    _mm256_storeu_pd(&children[i*12+0], p_10);
-    _mm256_storeu_pd(&children[i*12+4], p_11);
-    _mm256_storeu_pd(&children[i*12+8], p_12);
+    _mm256_storeu_pd(&representation[i*12+0], p_10);
+    _mm256_storeu_pd(&representation[i*12+4], p_11);
+    _mm256_storeu_pd(&representation[i*12+8], p_12);
 
     // second child
-    _mm256_storeu_pd(&children[i*12+12], p_20);
-    _mm256_storeu_pd(&children[i*12+16], p_21);
-    _mm256_storeu_pd(&children[i*12+20], p_22);
+    _mm256_storeu_pd(&representation[i*12+12], p_20);
+    _mm256_storeu_pd(&representation[i*12+16], p_21);
+    _mm256_storeu_pd(&representation[i*12+20], p_22);
     }
 }
 
