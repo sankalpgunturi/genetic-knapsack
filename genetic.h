@@ -128,9 +128,89 @@ __m256d fitness(double *weights, double *values_d, double *representation)
 //     return winners;
 // }
 
-// void crossover()
-// {
-// // }
+void crossover(double* representation, int popSize, double* children, double crossover_rate)
+{
+
+    __m256d CROSS_RATE =  _mm256_broadcast_sd(&crossover_rate);
+
+    double random0, random1, random2, random3;
+
+    double* cmp;
+    posix_memalign((void*) &cmp, 64, 4 * sizeof(double));
+
+// parents:
+// 0 1 0 1 1 0 | 1 0 0 0 0 0 
+// 1 1 1 1 1 1 | 0 0 0 1 1 1
+
+// children:
+// 0 1 0 1 1 0 | 0 0 0 1 1 1 
+// 1 1 1 1 1 1 | 1 0 0 0 0 0 
+
+for(int i=0; i<popSize; i+=2){
+
+    if(i%8 == 0){
+        random0 = (rand() % (100 - 0))/100.00;
+        random1 = (rand() % (100 - 0))/100.00;
+        random2 = (rand() % (100 - 0))/100.00;
+        random3 = (rand() % (100 - 0))/100.00;
+        // generate random numbers
+        __m256d RANDOM = _mm256_set_pd(random0, random1, random2, random3);
+        __m256d compare = _mm256_cmp_pd(CROSS_RATE, RANDOM, 14);
+        _mm256_storeu_pd(&cmp[0], compare);
+    }
+
+    // if rate < cross_rate, 1111, else 0000
+    // printf("%f ", cmp[(i/2)%4]);
+    if(cmp[(i/2)%4] != 0){
+    cnt1++;
+    __m256d p_10 = _mm256_loadu_pd(&representation[i*12+0]);
+    __m256d p_11 = _mm256_loadu_pd(&representation[i*12+4]);
+    __m256d p_12 = _mm256_loadu_pd(&representation[i*12+8]);
+
+    __m256d p_20 = _mm256_loadu_pd(&representation[i*12+12]);
+    __m256d p_21 = _mm256_loadu_pd(&representation[i*12+16]);
+    __m256d p_22 = _mm256_loadu_pd(&representation[i*12+20]);
+
+    __m256d tmp_1 = _mm256_permute2f128_pd(p_11, p_21, 0|(3<<4));
+    __m256d tmp_2 = _mm256_permute2f128_pd(p_21, p_11, 0|(3<<4));
+
+    // first child
+    _mm256_storeu_pd(&children[i*12+0], p_10);
+    _mm256_storeu_pd(&children[i*12+4], tmp_1);
+    _mm256_storeu_pd(&children[i*12+8], p_12);
+
+    // second child
+    _mm256_storeu_pd(&children[i*12+12], p_20);
+    _mm256_storeu_pd(&children[i*12+16], tmp_2);
+    _mm256_storeu_pd(&children[i*12+20], p_22);
+    
+    }
+    else{
+
+    // keep the same
+    __m256d p_10 = _mm256_loadu_pd(&representation[i*12+0]);
+    __m256d p_11 = _mm256_loadu_pd(&representation[i*12+4]);
+    __m256d p_12 = _mm256_loadu_pd(&representation[i*12+8]);
+
+    __m256d p_20 = _mm256_loadu_pd(&representation[i*12+12]);
+    __m256d p_21 = _mm256_loadu_pd(&representation[i*12+16]);
+    __m256d p_22 = _mm256_loadu_pd(&representation[i*12+20]);
+
+
+    // first child
+    _mm256_storeu_pd(&children[i*12+0], p_10);
+    _mm256_storeu_pd(&children[i*12+4], p_11);
+    _mm256_storeu_pd(&children[i*12+8], p_12);
+
+    // second child
+    _mm256_storeu_pd(&children[i*12+12], p_20);
+    _mm256_storeu_pd(&children[i*12+16], p_21);
+    _mm256_storeu_pd(&children[i*12+20], p_22);
+    }
+}
+
+}
+
 // void print(const __m256d v)
 // {
 //     printf(_mm256_extractf128_pd(v, 0));
