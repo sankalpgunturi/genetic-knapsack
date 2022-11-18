@@ -49,15 +49,29 @@ double *convertColMajorSIMD(double *matrix, int rowNum, int colNum)
 
 double *fitness(double *weights, double *values, double *representation)
 {
-    for (int i = 0; i < SIZE_OF_INITIAL_POPULATION; i += 4)
-    {
-        
+    __m256d total_weights, total_values;
+
+    for(int j=0;j<12;j++){
+        __m256d weightsj = _mm256_broadcast_sd(&weights[j]);
+        __m256d valuesj = _mm256_broadcast_sd(&values[j]);
+
+        for (int i = 0; i < SIZE_OF_INITIAL_POPULATION; i += 4){
+            __m256d r = _mm256_loadu_pd(&representation[i]);
+            total_weights = _mm256_fmadd_pd(r, weightsj, total_weights);
+            total_values = _mm256_fmadd_pd(r, valuesj, total_values);
+        }
     }
+    
+    
 }
 
 //  TODO : Convert row major to column major
 double *fitness(double *weights, double *values_d, double *representation)
 {
+
+    double* fitnessArray;
+    posix_memalign((void*) &fitnessArray, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double));
+
     // representation X representation:
     // COLUMN major order
     // 12 bits for 1 individual. Eg: [0, 0, 1, 1, ...]
@@ -68,13 +82,22 @@ double *fitness(double *weights, double *values_d, double *representation)
     // Algorithm
     // Broadcast weights
     // __m256d _mm256_broadcast_sd (double const * mem_addr)
-    double const val = 20.0; // MAX_KNAPSACK_WEIGHT;
+    double const val = 20.0; 
+    // MAX_KNAPSACK_WEIGHT;
+    int offset = SIZE_OF_INITIAL_POPULATION;
+
+    __m256d total_weights;
+    __m256d total_values;
     __m256d max_knapsack_weight = _mm256_broadcast_sd(&val);
-    __m256d weight = _mm256_broadcast_sd(&weights[0]);
-    __m256d values = _mm256_broadcast_sd(&values_d[0]);
-    __m256d i = _mm256_loadu_pd(&representation[0]);
-    __m256d total_weights = _mm256_fmadd_pd(i, weight, total_weights);
-    __m256d total_values = _mm256_fmadd_pd(i, values, total_values);
+    
+    __m256d weight_1 = _mm256_broadcast_sd(&weights[0]);
+    __m256d values_1 = _mm256_broadcast_sd(&values_d[0]);
+
+    for(int k=0; k < SIZE_OF_INITIAL_POPULATION; k+=4){
+    __m256d i = _mm256_loadu_pd(&representation[offset*0]);
+
+    total_weights = _mm256_fmadd_pd(i, weight_1, total_weights);
+    total_values = _mm256_fmadd_pd(i, values_1, total_values);
 
     __m256d weight_2 = _mm256_broadcast_sd(&weights[1]);
     __m256d weight_3 = _mm256_broadcast_sd(&weights[2]);
@@ -112,8 +135,8 @@ double *fitness(double *weights, double *values_d, double *representation)
     // // 12 such fmas to get 4 outputs
     // // i[0][0], i[1][0], i[2][0], i[3][0]* fma(weight[0])
 
-    __m256d i_2 = _mm256_loadu_pd(&representation[4]);
-    __m256d i_3 = _mm256_loadu_pd(&representation[8]);
+    __m256d i_2 = _mm256_loadu_pd(&representation[offset*1]);
+    __m256d i_3 = _mm256_loadu_pd(&representation[offset*2]);
     __m256d i_4 = _mm256_loadu_pd(&representation[16]);
     __m256d i_5 = _mm256_loadu_pd(&representation[20]);
     __m256d i_6 = _mm256_loadu_pd(&representation[24]);
