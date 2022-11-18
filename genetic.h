@@ -155,7 +155,7 @@ double *mutation(double *representation, double MUTATION_RATE)
     double random_val1;
     double random_val2;
     double random_val3;
-
+    __m256d ONES = _mm256_set_pd(1.0, 1.0, 1.0, 1.0);
     for (int i =0; i< 256; i+=2 ) {
         //for (int j = 0; j < 12; j+=4) {
             
@@ -171,17 +171,18 @@ double *mutation(double *representation, double MUTATION_RATE)
             __m256d i1_2 = _mm256_loadu_pd(&representation[i+4]);
             __m256d i1_3 = _mm256_loadu_pd(&representation[i+8]);
 
-            // printf(" %.2f  %.2f  %.2f  %.2f ",representation[i], representation[i+1], representation[i+2], representation[i+3]);
-            // printf(" %.2f  %.2f  %.2f  %.2f ",representation[i+4], representation[i+5], representation[i+6], representation[i+7]);
-            // printf(" %.2f  %.2f  %.2f  %.2f ",representation[i+8], representation[i+9], representation[i+10], representation[i+11]);
 
-            __m256d compare = _mm256_cmp_pd(RANDOM, MUTATION_RATE_, 14);
+            __m256d compare = _mm256_cmp_pd(RANDOM, MUTATION_RATE_, 2);
+
+            _mm256_storeu_pd(&representation[i+12], RANDOM);
+            _mm256_storeu_pd(&representation[i+16], MUTATION_RATE_);
+            _mm256_storeu_pd(&representation[i+20], compare);
+            compare = _mm256_and_pd(compare, ONES);
             
-            _mm256_storeu_pd(&representation[i+0], RANDOM);
+            _mm256_storeu_pd(&representation[i+24], compare);
+            _mm256_storeu_pd(&representation[i+28], ONES);
+            //_mm256_storeu_pd(&representation[i+4], MUTATION_RATE_);
 
-            _mm256_storeu_pd(&representation[i+4], MUTATION_RATE_);
-
-            _mm256_storeu_pd(&representation[i+8], compare);
             //printf(" %.2f  %.2f  %.2f  %.2f ",compare[i], representation[i+1], representation[i+2], representation[i+3]);
             // printf(" COMPARE : %d ",i);
             // print(compare);
@@ -192,13 +193,14 @@ double *mutation(double *representation, double MUTATION_RATE)
             // i_1  =  0 0 1 1
             // rand0 = 1.14 1.25 1.75 1.09
             // mutation_rate = 1.15 1.15 1.15 1.15
+            // compare =  
             // compare = 0xFF 0 0 0xFF 
             // 0 0 1 1
             // i_1 = 1 0 1 0
             
-            // _mm256_storeu_pd(&representation[i+0], i1_1);
-            // _mm256_storeu_pd(&representation[i+4], i1_2);
-            // _mm256_storeu_pd(&representation[i+8], i1_3);
+             _mm256_storeu_pd(&representation[i], i1_1);
+            _mm256_storeu_pd(&representation[i+4], i1_2);
+             _mm256_storeu_pd(&representation[i+8], i1_3);
             
             // _mm256_storeu_pd(&representation[i+4], i1_1);
             // _mm256_storeu_pd(&representation[i+8], i1_2);
@@ -206,33 +208,7 @@ double *mutation(double *representation, double MUTATION_RATE)
 
              
             break;
-            // i2_1 = _mm256_loadu_pd(&representation[i+12]);
-            // i2_2 = _mm256_loadu_pd(&representation[i+16]);
-            // i2_3 = _mm256_loadu_pd(&representation[i+20]);
 
-
-            // // if (_mm256_cmp_ps()) {
-            // //    _mm256_xor_epi64();
-            // // }
-            
-
-            // _mm256_storeu_pd(&representation[i+12], i1_1);
-            // _mm256_storeu_pd(&representation[i+16], i1_2);
-            // _mm256_storeu_pd(&representation[i+20], i1_3);
-            
-            // i3_1 = _mm256_loadu_pd(&representation[i+24]);
-            // i3_2 = _mm256_loadu_pd(&representation[i+28]);
-            // i3_3 = _mm256_loadu_pd(&representation[i+32]);
-
-
-            // // if (_mm256_cmp_ps()) {
-            // //    _mm256_xor_epi64();
-            // // }
-            
-
-            // _mm256_storeu_pd(&representation[i+24], i1_1);
-            // _mm256_storeu_pd(&representation[i+28], i1_2);
-            // _mm256_storeu_pd(&representation[i+32], i1_3);
 
 }
 }

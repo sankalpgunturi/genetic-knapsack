@@ -71,17 +71,26 @@ int main(){
 
   }
   int i = 0;
-printf(" %.2f  %.2f  %.2f  %.2f ",population[i], population[i+1], population[i+2], population[i+3]);
-            printf(" %.2f  %.2f  %.2f  %.2f ",population[i+4], population[i+5], population[i+6], population[i+7]);
-            printf(" %.2f  %.2f  %.2f  %.2f ",population[i+8], population[i+9], population[i+10], population[i+11]);
+printf(" %.2f  %.2f  %.2f  %.2f \n",population[i], population[i+1], population[i+2], population[i+3]);
+            printf(" %.2f  %.2f  %.2f  %.2f \n",population[i+4], population[i+5], population[i+6], population[i+7]);
+            printf(" %.2f  %.2f  %.2f  %.2f \n",population[i+8], population[i+9], population[i+10], population[i+11]);
       
   
-  mutation(population, 0.90 );
+  mutation(population, 0.50 );
   printf("\nMUTATION\n");
   //i = 0;
-  printf(" %.2f  %.2f  %.2f  %.2f ",population[i], population[i+1], population[i+2], population[i+3]);
-            printf(" %.2f  %.2f  %.2f  %.2f ",population[i+4], population[i+5], population[i+6], population[i+7]);
-            printf(" %.2f  %.2f  %.2f  %.2f ",population[i+8], population[i+9], population[i+10], population[i+11]);
+  printf(" %.2f  %.2f  %.2f  %.2f \n",population[i], population[i+1], population[i+2], population[i+3]);
+
+  //print(population[i]);
+  printf(" %.2f  %.2f  %.2f  %.2f \n",population[i+4], population[i+5], population[i+6], population[i+7]);
+  printf(" %.2f  %.2f  %.2f  %.2f \n",population[i+8], population[i+9], population[i+10], population[i+11]);
+  
+  printf("RANDOM \t\t\t %.2f  %.2f  %.2f  %.2f \n",population[i+12], population[i+13], population[i+14], population[i+15]);
+  printf("MUTATION RATE_ \t\t %.2f  %.2f  %.2f  %.2f \n",population[i+16], population[i+17], population[i+18], population[i+19]);
+  printf("COMPARE \t\t %.2f  %.2f  %.2f  %.2f \n",population[i+20], population[i+21], population[i+22], population[i+23]);
+
+  printf("ONES \t\t\t %.2f  %.2f  %.2f  %.2f \n",population[i+28], population[i+29], population[i+30], population[i+31]);
+  printf("COMPARE AND ONES \t %.2f  %.2f  %.2f  %.2f \n",population[i+24], population[i+25], population[i+26], population[i+27]);
            
   // for (int i = 0; i < POPULATION_SIZE * NUMBER_OF_ITEMS; i++){
   //       printf(" %.2f ",population[i]);
