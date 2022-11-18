@@ -1,8 +1,8 @@
 #include "immintrin.h"
 
-#define NUMBER_OF_ITEMS 12
-#define MAX_KNAPSACK_WEIGHT 15
-#define SIZE_OF_INITIAL_POPULATION 256
+// #define NUMBER_OF_ITEMS 12
+// #define MAX_KNAPSACK_WEIGHT 15
+// #define SIZE_OF_INITIAL_POPULATION 256
 
 
 double* convertColMajor(double * matrix, int rowNum, int colNum){
@@ -38,7 +38,7 @@ __m256d fitness(double *weights, double *values_d, double *representation)
     // Algorithm
     // Broadcast weights
     // __m256d _mm256_broadcast_sd (double const * mem_addr)
-    double const val = MAX_KNAPSACK_WEIGHT;
+    double const val = 20.0; //MAX_KNAPSACK_WEIGHT;
     __m256d max_knapsack_weight = _mm256_broadcast_sd(&val);
     __m256d weight = _mm256_broadcast_sd(&weights[0]);
     __m256d values = _mm256_broadcast_sd(&values_d[0]);
@@ -208,25 +208,25 @@ for(int i=0; i<popSize; i+=2){
     }
     else{
 
-    // keep the same
-    __m256d p_10 = _mm256_loadu_pd(&representation[i*12+0]);
-    __m256d p_11 = _mm256_loadu_pd(&representation[i*12+4]);
-    __m256d p_12 = _mm256_loadu_pd(&representation[i*12+8]);
+    // // keep the same
+    // __m256d p_10 = _mm256_loadu_pd(&representation[i*12+0]);
+    // __m256d p_11 = _mm256_loadu_pd(&representation[i*12+4]);
+    // __m256d p_12 = _mm256_loadu_pd(&representation[i*12+8]);
 
-    __m256d p_20 = _mm256_loadu_pd(&representation[i*12+12]);
-    __m256d p_21 = _mm256_loadu_pd(&representation[i*12+16]);
-    __m256d p_22 = _mm256_loadu_pd(&representation[i*12+20]);
+    // __m256d p_20 = _mm256_loadu_pd(&representation[i*12+12]);
+    // __m256d p_21 = _mm256_loadu_pd(&representation[i*12+16]);
+    // __m256d p_22 = _mm256_loadu_pd(&representation[i*12+20]);
 
 
-    // first child
-    _mm256_storeu_pd(&representation[i*12+0], p_10);
-    _mm256_storeu_pd(&representation[i*12+4], p_11);
-    _mm256_storeu_pd(&representation[i*12+8], p_12);
+    // // first child
+    // _mm256_storeu_pd(&representation[i*12+0], p_10);
+    // _mm256_storeu_pd(&representation[i*12+4], p_11);
+    // _mm256_storeu_pd(&representation[i*12+8], p_12);
 
-    // second child
-    _mm256_storeu_pd(&representation[i*12+12], p_20);
-    _mm256_storeu_pd(&representation[i*12+16], p_21);
-    _mm256_storeu_pd(&representation[i*12+20], p_22);
+    // // second child
+    // _mm256_storeu_pd(&representation[i*12+12], p_20);
+    // _mm256_storeu_pd(&representation[i*12+16], p_21);
+    // _mm256_storeu_pd(&representation[i*12+20], p_22);
     }
 }
 
@@ -243,7 +243,7 @@ double *mutation(double *representation, double MUTATION_RATE)
     double random_val2;
     double random_val3;
     __m256d ONES = _mm256_set_pd(1.0, 1.0, 1.0, 1.0);
-    for (int i =0; i< 256; i+=32 ) {
+    for (int i =0; i< 256; i+=3 ) {
             
             random_val0 = (rand() % (100 - 0))/100.00;
             random_val1 = (rand() % (100 - 0))/100.00;

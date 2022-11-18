@@ -17,6 +17,7 @@ int main(){
   double *population;
   int POPULATION_SIZE = 256;
   int NUMBER_OF_ITEMS = 12;
+  int NUMBER_OF_GENERATIONS = 10000;
   posix_memalign((void*) &population, 64, POPULATION_SIZE * 12 * sizeof(double));
   
   srand(time(NULL));
@@ -50,9 +51,25 @@ int main(){
       printf(" %.2f ", population[i]);
 
    }
-  mutation(population, 0.50 );
-  printf("\nAFTER MUTATION\n");
-           
+  
+  // population = generate_initial_population()
+
+  //   avg_fitnesses = []
+
+  //   for _ in range(NUMBER_OF_GENERATIONS):
+  //       avg_fitnesses.append(average_fitness(population))
+  //       population = next_generation(population)
+
+  //   population = sorted(population, key=lambda i: i.fitness(), reverse=True)
+  // def average_fitness(population: List[Individual]) -> float:
+  //   return sum([i.fitness() for i in population]) / len(population)
+
+  for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
+    crossover(population, POPULATION_SIZE, 0.25 );
+    mutation(population, 0.15 );
+  }
+  
+  printf("\nFINAL GENERATION:\n");
   for (int i = 0; i < POPULATION_SIZE * NUMBER_OF_ITEMS; i++){
         printf(" %.2f ",population[i]);
         if ((i+1) %12 ==0) {
@@ -61,4 +78,7 @@ int main(){
   } 
 
  return 0;
+
+ free(population);
+
 }
