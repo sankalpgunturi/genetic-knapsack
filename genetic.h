@@ -3,7 +3,6 @@
 #define NUMBER_OF_ITEMS 12
 #define MAX_KNAPSACK_WEIGHT 15
 #define SIZE_OF_INITIAL_POPULATION 256
-#define SELECTION_QUOTIENT 4
 
 double *convertColMajor(double *matrix, int rowNum, int colNum)
 {
@@ -47,23 +46,6 @@ double *convertColMajorSIMD(double *matrix, int rowNum, int colNum)
     return res;
 }
 
-double *fitness(double *weights, double *values, double *representation)
-{
-    __m256d total_weights, total_values;
-
-    for(int j=0;j<12;j++){
-        __m256d weightsj = _mm256_broadcast_sd(&weights[j]);
-        __m256d valuesj = _mm256_broadcast_sd(&values[j]);
-
-        for (int i = 0; i < SIZE_OF_INITIAL_POPULATION; i += 4){
-            __m256d r = _mm256_loadu_pd(&representation[i]);
-            total_weights = _mm256_fmadd_pd(r, weightsj, total_weights);
-            total_values = _mm256_fmadd_pd(r, valuesj, total_values);
-        }
-    }
-    
-    
-}
 
 //  TODO : Convert row major to column major
 double *fitness(double *weights, double *values_d, double *representation)
@@ -94,7 +76,7 @@ double *fitness(double *weights, double *values_d, double *representation)
     __m256d values_1 = _mm256_broadcast_sd(&values_d[0]);
 
     for(int k=0; k < SIZE_OF_INITIAL_POPULATION; k+=4){
-    __m256d i = _mm256_loadu_pd(&representation[offset*0]);
+    __m256d i_1 = _mm256_loadu_pd(&representation[offset*0 + k]);
 
     total_weights = _mm256_fmadd_pd(i, weight_1, total_weights);
     total_values = _mm256_fmadd_pd(i, values_1, total_values);
@@ -135,17 +117,17 @@ double *fitness(double *weights, double *values_d, double *representation)
     // // 12 such fmas to get 4 outputs
     // // i[0][0], i[1][0], i[2][0], i[3][0]* fma(weight[0])
 
-    __m256d i_2 = _mm256_loadu_pd(&representation[offset*1]);
-    __m256d i_3 = _mm256_loadu_pd(&representation[offset*2]);
-    __m256d i_4 = _mm256_loadu_pd(&representation[16]);
-    __m256d i_5 = _mm256_loadu_pd(&representation[20]);
-    __m256d i_6 = _mm256_loadu_pd(&representation[24]);
-    __m256d i_7 = _mm256_loadu_pd(&representation[28]);
-    __m256d i_8 = _mm256_loadu_pd(&representation[32]);
-    __m256d i_9 = _mm256_loadu_pd(&representation[36]);
-    __m256d i_10 = _mm256_loadu_pd(&representation[40]);
-    __m256d i_11 = _mm256_loadu_pd(&representation[44]);
-    __m256d i_12 = _mm256_loadu_pd(&representation[48]);
+    __m256d i_2 = _mm256_loadu_pd(&representation[offset*1 + k]);
+    __m256d i_3 = _mm256_loadu_pd(&representation[offset*2 + k]);
+    __m256d i_4 = _mm256_loadu_pd(&representation[offset*3 + k]);
+    __m256d i_5 = _mm256_loadu_pd(&representation[offset*4 + k]);
+    __m256d i_6 = _mm256_loadu_pd(&representation[offset*5 + k]);
+    __m256d i_7 = _mm256_loadu_pd(&representation[offset*6 + k]);
+    __m256d i_8 = _mm256_loadu_pd(&representation[offset*7 + k]);
+    __m256d i_9 = _mm256_loadu_pd(&representation[offset*8 + k]);
+    __m256d i_10 = _mm256_loadu_pd(&representation[offset*9 + k]);
+    __m256d i_11 = _mm256_loadu_pd(&representation[offset*10 + k]);
+    __m256d i_12 = _mm256_loadu_pd(&representation[offset*11 + k]);
 
     total_weights = _mm256_fmadd_pd(i_2, weight_2, total_weights);
     total_weights = _mm256_fmadd_pd(i_3, weight_3, total_weights);
@@ -173,9 +155,12 @@ double *fitness(double *weights, double *values_d, double *representation)
 
     //__m256d _mm256_cmp_pd (__m256d a, __m256d b, const int imm8)
     // 2 is OP Less Than Equal to
-    __m256d ret_cmp = _mm256_cmp_pd(total_weights, max_knapsack_weight, 2);
+    // TODO
+    // __m256d ret_cmp = _mm256_cmp_pd(total_weights, max_knapsack_weight, 2);
     // ret_cmp & total_values
-    total_values = _mm256_and_pd(ret_cmp, total_values);
+    // total_values = _mm256_and_pd(ret_cmp, total_values);
+    _mm256_storeu_pd(&fitnessArray[k], total_values);
+    }
     return total_values;
 }
 
@@ -185,26 +170,43 @@ double *selection(double *weights, double *values_d, double *initial_population)
     double *winners = (double *)malloc((SIZE_OF_INITIAL_POPULATION / 2) * sizeof(double));
     contenders = fitness(weights, values_d, initial_population);
 
-    for (int i = 0; i < SIZE_OF_INITIAL_POPULATION; i += 40)
+    __m256d contenders_set_0 = _mm256_loadu_pd(&contenders[i]);
+    __m256d contenders_set_1 = _mm256_loadu_pd(&contenders[i + 4]);
+    __m256d contenders_set_2 = _mm256_loadu_pd(&contenders[i + 8]);
+    __m256d contenders_set_3 = _mm256_loadu_pd(&contenders[i + 12]);
+    __m256d contenders_set_4 = _mm256_loadu_pd(&contenders[i + 16]);
+    __m256d contenders_set_5 = _mm256_loadu_pd(&contenders[i + 20]);
+    __m256d contenders_set_6 = _mm256_loadu_pd(&contenders[i + 24]);
+    __m256d contenders_set_7 = _mm256_loadu_pd(&contenders[i + 28]);
+    __m256d contenders_set_8 = _mm256_loadu_pd(&contenders[i + 32]);
+    __m256d contenders_set_9 = _mm256_loadu_pd(&contenders[i + 36]);
+
+    __m256d result_0 = _mm256_cmp_pd(contenders_set_0, contenders_set_1, 14);
+    __m256d result_1 = _mm256_cmp_pd(contenders_set_2, contenders_set_3, 14);
+    __m256d result_2 = _mm256_cmp_pd(contenders_set_4, contenders_set_5, 14);
+    __m256d result_3 = _mm256_cmp_pd(contenders_set_6, contenders_set_7, 14);
+    __m256d result_4 = _mm256_cmp_pd(contenders_set_8, contenders_set_9, 14);
+
+    for (int i = 40; i < SIZE_OF_INITIAL_POPULATION; i += 40)
     {
         // 10 registers
-        __m256 contenders_set_0 = _mm256_loadu_pd(&contenders[i]);
-        __m256 contenders_set_1 = _mm256_loadu_pd(&contenders[i + 4]);
-        __m256 contenders_set_2 = _mm256_loadu_pd(&contenders[i + 8]);
-        __m256 contenders_set_3 = _mm256_loadu_pd(&contenders[i + 12]);
-        __m256 contenders_set_4 = _mm256_loadu_pd(&contenders[i + 16]);
-        __m256 contenders_set_5 = _mm256_loadu_pd(&contenders[i + 20]);
-        __m256 contenders_set_6 = _mm256_loadu_pd(&contenders[i + 24]);
-        __m256 contenders_set_7 = _mm256_loadu_pd(&contenders[i + 28]);
-        __m256 contenders_set_8 = _mm256_loadu_pd(&contenders[i + 32]);
-        __m256 contenders_set_9 = _mm256_loadu_pd(&contenders[i + 36]);
+        contenders_set_0 = _mm256_loadu_pd(&contenders[i]);
+        contenders_set_1 = _mm256_loadu_pd(&contenders[i + 4]);
+        contenders_set_2 = _mm256_loadu_pd(&contenders[i + 8]);
+        contenders_set_3 = _mm256_loadu_pd(&contenders[i + 12]);
+        contenders_set_4 = _mm256_loadu_pd(&contenders[i + 16]);
+        contenders_set_5 = _mm256_loadu_pd(&contenders[i + 20]);
+        contenders_set_6 = _mm256_loadu_pd(&contenders[i + 24]);
+        contenders_set_7 = _mm256_loadu_pd(&contenders[i + 28]);
+        contenders_set_8 = _mm256_loadu_pd(&contenders[i + 32]);
+        contenders_set_9 = _mm256_loadu_pd(&contenders[i + 36]);
 
         // 5 registers
-        __m256 result_0 = _mm256_cmp_pd(contenders_set_0, contenders_set_1, 14);
-        __m256 result_1 = _mm256_cmp_pd(contenders_set_2, contenders_set_3, 14);
-        __m256 result_2 = _mm256_cmp_pd(contenders_set_4, contenders_set_5, 14);
-        __m256 result_3 = _mm256_cmp_pd(contenders_set_6, contenders_set_7, 14);
-        __m256 result_4 = _mm256_cmp_pd(contenders_set_8, contenders_set_9, 14);
+        result_0 = _mm256_cmp_pd(contenders_set_0, contenders_set_1, 14);
+        result_1 = _mm256_cmp_pd(contenders_set_2, contenders_set_3, 14);
+        result_2 = _mm256_cmp_pd(contenders_set_4, contenders_set_5, 14);
+        result_3 = _mm256_cmp_pd(contenders_set_6, contenders_set_7, 14);
+        result_4 = _mm256_cmp_pd(contenders_set_8, contenders_set_9, 14);
 
         for (int j = 0; j < SIZE_OF_INITIAL_POPULATION / 2; j += 2)
         {
