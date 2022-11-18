@@ -142,11 +142,6 @@ __m256d fitness(double *weights, double *values_d, double *representation)
 double *mutation(double *representation, double MUTATION_RATE)
 {   
     // Row ordering of representation
-//   for individual in individuals:
-//         for i in range(len(individual.bits)):
-//             if random.random() < MUTATION_RATE:
-//                 # Flip the bit
-//                 individual.bits[i] = ~individual.bits[i]
     double const mr = MUTATION_RATE;
     const int le_op = 1;
     __m256d MUTATION_RATE_ =  _mm256_broadcast_sd(&mr) ;
@@ -157,7 +152,6 @@ double *mutation(double *representation, double MUTATION_RATE)
     double random_val3;
     __m256d ONES = _mm256_set_pd(1.0, 1.0, 1.0, 1.0);
     for (int i =0; i< 256; i+=2 ) {
-        //for (int j = 0; j < 12; j+=4) {
             
             random_val0 = (rand() % (100 - 0))/100.00;
             random_val1 = (rand() % (100 - 0))/100.00;
@@ -174,13 +168,13 @@ double *mutation(double *representation, double MUTATION_RATE)
 
             __m256d compare = _mm256_cmp_pd(RANDOM, MUTATION_RATE_, 2);
 
-            _mm256_storeu_pd(&representation[i+12], RANDOM);
-            _mm256_storeu_pd(&representation[i+16], MUTATION_RATE_);
-            _mm256_storeu_pd(&representation[i+20], compare);
+            // _mm256_storeu_pd(&representation[i+12], RANDOM);
+            // _mm256_storeu_pd(&representation[i+16], MUTATION_RATE_);
+            // _mm256_storeu_pd(&representation[i+20], compare);
             compare = _mm256_and_pd(compare, ONES);
             
-            _mm256_storeu_pd(&representation[i+24], compare);
-            _mm256_storeu_pd(&representation[i+28], ONES);
+            // _mm256_storeu_pd(&representation[i+24], compare);
+            // _mm256_storeu_pd(&representation[i+28], ONES);
             //_mm256_storeu_pd(&representation[i+4], MUTATION_RATE_);
 
             //printf(" %.2f  %.2f  %.2f  %.2f ",compare[i], representation[i+1], representation[i+2], representation[i+3]);
