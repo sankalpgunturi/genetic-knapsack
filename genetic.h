@@ -13,18 +13,34 @@ double* convertColMajor(double * matrix, int rowNum, int colNum){
     for(int j=0; j < colNum; j++){
         for(int i=0;i < rowNum; i++){
             res[rowNum*j+i] = matrix[i*colNum +j];
-            // matrix[i*SIZE_OF_INITIAL_POPULATION + j];
-            // int offset1 = i*SIZE_OF_INITIAL_POPULATION;
-            // int offset2 = (i+1)*SIZE_OF_INITIAL_POPULATION;
-            // int offset3 = (i+2)*SIZE_OF_INITIAL_POPULATION;
-            // int offset4 = (i+3)*SIZE_OF_INITIAL_POPULATION;
-            // __m256d ymm0 = _mm256_set_pd(matrix[offset1 + j], matrix[offset2 + j], matrix[offset3 + j], matrix[offset4 + j]);
-            // TODO: try to use SIMD
         }
     }
    
    return res;
 }
+
+// specially for colNum = 12 (3 SIMD registers)
+double* convertColMajorSIMD(double* matrix, int rowNum, int colNum){
+    double* res;
+    posix_memalign((void*) &res, 64, rowNum * colNum * sizeof(double));
+    
+    int index = 0;
+    for(int j=0; j < colNum; j++){
+        for(int i=0; i < rowNum; i+=4){
+            int offset1 = i*SIZE_OF_INITIAL_POPULATION;
+            int offset2 = (i+1)*SIZE_OF_INITIAL_POPULATION;
+            int offset3 = (i+2)*SIZE_OF_INITIAL_POPULATION;
+            int offset4 = (i+3)*SIZE_OF_INITIAL_POPULATION;
+            __m256d ymm0 = _mm256_set_pd(matrix[offset4 + j], matrix[offset3 + j], matrix[offset2 + j], matrix[offset1 + j]);
+            
+            _mm256_storeu_pd(&res[index], ymm0);
+            index += 4;
+        }
+    }
+   
+   return res;
+}
+
 //  TODO : Convert row major to column major
 __m256d fitness(double *weights, double *values_d, double *representation)
 {   
