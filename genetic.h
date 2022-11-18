@@ -165,6 +165,7 @@ __m256d fitness(double *weights, double *values_d, double *representation)
 //     return winners;
 // }
 
+
 void crossover(double* representation, int popSize, double crossover_rate)
 {
 
@@ -183,7 +184,7 @@ void crossover(double* representation, int popSize, double crossover_rate)
 // 0 1 0 1 1 0 | 0 0 0 1 1 1 
 // 1 1 1 1 1 1 | 1 0 0 0 0 0 
 
-for(int i=0; i<popSize; i+=2){
+for(int i=0; i<popSize; i+=4){
 
     if(i%8 == 0){
         random0 = (rand() % (100 - 0))/100.00;
@@ -200,6 +201,7 @@ for(int i=0; i<popSize; i+=2){
     // printf("%f ", cmp[(i/2)%4]);
     if(cmp[(i/2)%4] != 0){
 
+    
     __m256d p_10 = _mm256_loadu_pd(&representation[i*12+0]);
     __m256d p_11 = _mm256_loadu_pd(&representation[i*12+4]);
     __m256d p_12 = _mm256_loadu_pd(&representation[i*12+8]);
@@ -221,28 +223,73 @@ for(int i=0; i<popSize; i+=2){
     _mm256_storeu_pd(&representation[i*12+16], tmp_2);
     _mm256_storeu_pd(&representation[i*12+20], p_22);
     
+
+    // repeat one time for larger register usage
+    __m256d p_30 = _mm256_loadu_pd(&representation[i*12+24]);
+    __m256d p_31 = _mm256_loadu_pd(&representation[i*12+28]);
+    __m256d p_32 = _mm256_loadu_pd(&representation[i*12+32]);
+
+    __m256d p_40 = _mm256_loadu_pd(&representation[i*12+36]);
+    __m256d p_41 = _mm256_loadu_pd(&representation[i*12+40]);
+    __m256d p_42 = _mm256_loadu_pd(&representation[i*12+44]);
+
+    tmp_1 = _mm256_permute2f128_pd(p_31, p_41, 0|(3<<4));
+    tmp_2 = _mm256_permute2f128_pd(p_41, p_31, 0|(3<<4));
+    
+    // first child
+    _mm256_storeu_pd(&representation[i*12+24], p_30);
+    _mm256_storeu_pd(&representation[i*12+28], tmp_1);
+    _mm256_storeu_pd(&representation[i*12+32], p_32);
+
+    // second child
+    _mm256_storeu_pd(&representation[i*12+36], p_40);
+    _mm256_storeu_pd(&representation[i*12+40], tmp_2);
+    _mm256_storeu_pd(&representation[i*12+44], p_42);
+
     }
     else{
 
-    // // keep the same
-    // __m256d p_10 = _mm256_loadu_pd(&representation[i*12+0]);
-    // __m256d p_11 = _mm256_loadu_pd(&representation[i*12+4]);
-    // __m256d p_12 = _mm256_loadu_pd(&representation[i*12+8]);
+    // keep the same
+    __m256d p_10 = _mm256_loadu_pd(&representation[i*12+0]);
+    __m256d p_11 = _mm256_loadu_pd(&representation[i*12+4]);
+    __m256d p_12 = _mm256_loadu_pd(&representation[i*12+8]);
 
-    // __m256d p_20 = _mm256_loadu_pd(&representation[i*12+12]);
-    // __m256d p_21 = _mm256_loadu_pd(&representation[i*12+16]);
-    // __m256d p_22 = _mm256_loadu_pd(&representation[i*12+20]);
+    __m256d p_20 = _mm256_loadu_pd(&representation[i*12+12]);
+    __m256d p_21 = _mm256_loadu_pd(&representation[i*12+16]);
+    __m256d p_22 = _mm256_loadu_pd(&representation[i*12+20]);
 
 
-    // // first child
-    // _mm256_storeu_pd(&representation[i*12+0], p_10);
-    // _mm256_storeu_pd(&representation[i*12+4], p_11);
-    // _mm256_storeu_pd(&representation[i*12+8], p_12);
+    // first child
+    _mm256_storeu_pd(&representation[i*12+0], p_10);
+    _mm256_storeu_pd(&representation[i*12+4], p_11);
+    _mm256_storeu_pd(&representation[i*12+8], p_12);
 
-    // // second child
-    // _mm256_storeu_pd(&representation[i*12+12], p_20);
-    // _mm256_storeu_pd(&representation[i*12+16], p_21);
-    // _mm256_storeu_pd(&representation[i*12+20], p_22);
+    // second child
+    _mm256_storeu_pd(&representation[i*12+12], p_20);
+    _mm256_storeu_pd(&representation[i*12+16], p_21);
+    _mm256_storeu_pd(&representation[i*12+20], p_22);
+
+    // repeat for one more time for more usage of registers
+    // keep the same
+    __m256d p_30 = _mm256_loadu_pd(&representation[i*12+24]);
+    __m256d p_31 = _mm256_loadu_pd(&representation[i*12+28]);
+    __m256d p_32 = _mm256_loadu_pd(&representation[i*12+32]);
+
+    __m256d p_40 = _mm256_loadu_pd(&representation[i*12+36]);
+    __m256d p_41 = _mm256_loadu_pd(&representation[i*12+40]);
+    __m256d p_42 = _mm256_loadu_pd(&representation[i*12+44]);
+
+
+    // first child
+    _mm256_storeu_pd(&representation[i*12+24], p_30);
+    _mm256_storeu_pd(&representation[i*12+28], p_31);
+    _mm256_storeu_pd(&representation[i*12+32], p_32);
+
+    // second child
+    _mm256_storeu_pd(&representation[i*12+36], p_40);
+    _mm256_storeu_pd(&representation[i*12+40], p_41);
+    _mm256_storeu_pd(&representation[i*12+44], p_42);
+
     }
 }
 
