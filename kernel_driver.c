@@ -17,7 +17,7 @@ int main(){
   double *population;
   int POPULATION_SIZE = 256;
   int NUMBER_OF_ITEMS = 12;
-  int NUMBER_OF_GENERATIONS = 10000;
+  int NUMBER_OF_GENERATIONS = 1;
   posix_memalign((void*) &population, 64, POPULATION_SIZE * 12 * sizeof(double));
   
   srand(time(NULL));
