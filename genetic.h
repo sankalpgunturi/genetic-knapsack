@@ -316,10 +316,11 @@ double *mutation(double *representation, double MUTATION_RATE)
         random_vals[1] = (rand() % (100 - 0))/100.00;
         random_vals[2] = (rand() % (100 - 0))/100.00;
         random_vals[3] = (rand() % (100 - 0))/100.00;
-        RANDOM = _mm256_loadu_pd(&random_vals[0]);
 
+        RANDOM = _mm256_loadu_pd(&random_vals[0]);
         compare = _mm256_cmp_pd(RANDOM, MUTATION_RATE_, 2);
         compare = _mm256_and_pd(compare, ONES);
+        
         i1_1 = _mm256_loadu_pd(&representation[i+0]);
         i1_2 = _mm256_loadu_pd(&representation[i+4]);
         i1_3 = _mm256_loadu_pd(&representation[i+8]);
