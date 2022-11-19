@@ -27,13 +27,15 @@ double *fitness(double *weights, double *values_d, double *initial_population)
 double *selection(double *weights, double *values_d, double *initial_population)
 {
     double *contenders = (double *)malloc((SIZE_OF_INITIAL_POPULATION) * sizeof(double));
-    double *winners = (double *)malloc((SIZE_OF_INITIAL_POPULATION / 2) * NUMBER_OF_ITEMS * sizeof(double));
+    double *winners = (double *)malloc((SIZE_OF_INITIAL_POPULATION / 2) * sizeof(double));
     contenders = fitness(weights, values_d, initial_population);
     // for (int i = 0; i < 256; i++)
     // {
     //     printf("%lf ", contenders[i]);
     // }
     // printf("\n");
+    // 0 0 0 0 1 1 0 0 0 0 1 1
+    // [4, 5, 0, 1, 10, 15, ..]
     int i = 0;
     __m256d contenders_set_0;
     __m256d contenders_set_1;
@@ -50,11 +52,22 @@ double *selection(double *weights, double *values_d, double *initial_population)
     __m256d result_2;
     __m256d result_3;
     __m256d result_4;
+
+    double *random_vals;
+    posix_memalign((void *)&random_vals, 64, 5 * 4 * sizeof(double));
+    random_vals[0] = 1.0;
+    random_vals[1] = 1.0;
+    random_vals[2] = 1.0;
+    random_vals[3] = 1.0;
+    __m256d ONES = _mm256_loadu_pd(&random_vals[0]);
     for (int i = 0; i <= 200; i += 40)
     {
         // 10 registers
-        contenders_set_0 = _mm256_loadu_pd(&contenders[i]);
-        contenders_set_1 = _mm256_loadu_pd(&contenders[i + 4]);
+        // 4, 5, 10, 0,
+        // 9, 1, 9, 10
+
+        contenders_set_0 = _mm256_loadu_pd(&contenders[i]);     // 4
+        contenders_set_1 = _mm256_loadu_pd(&contenders[i + 4]); // 0
         contenders_set_2 = _mm256_loadu_pd(&contenders[i + 8]);
         contenders_set_3 = _mm256_loadu_pd(&contenders[i + 12]);
         contenders_set_4 = _mm256_loadu_pd(&contenders[i + 16]);
@@ -65,13 +78,51 @@ double *selection(double *weights, double *values_d, double *initial_population)
         contenders_set_9 = _mm256_loadu_pd(&contenders[i + 36]);
         // 5 registers
         result_0 = _mm256_cmp_pd(contenders_set_0, contenders_set_1, 14);
+        result_0 = _mm256_and_pd(result_0, ONES);
+        _mm256 storeu_pd(&random_vals[0], result_0);
         result_1 = _mm256_cmp_pd(contenders_set_2, contenders_set_3, 14);
+        result_1 = _mm256_and_pd(result_1, ONES);
+        _mm256 storeu_pd(&random_vals[4], result_1);
         result_2 = _mm256_cmp_pd(contenders_set_4, contenders_set_5, 14);
+        result_2 = _mm256_and_pd(result_2, ONES);
+        _mm256 storeu_pd(&random_vals[8], result_2);
         result_3 = _mm256_cmp_pd(contenders_set_6, contenders_set_7, 14);
+        result_3 = _mm256_and_pd(result_3, ONES);
+        _mm256 storeu_pd(&random_vals[12], result_3);
         result_4 = _mm256_cmp_pd(contenders_set_8, contenders_set_9, 14);
+        result_4 = _mm256_and_pd(result_4, ONES);
+        _mm256 storeu_pd(&random_vals[16], result_4);
+        // 4, 5, 10, 0,
+        // 9, 1, 9, 10
+        // random_vals[4:8] = [0,0,1,0]
+        // random_vals[8:12] = [1,1,1,0]
+
+        // random_vals[:4] = [1, 0, 0, 1]
+        //
+        // j -> 0 -4
+        // winners[0] = random_vals[0] == 1 ? initial_pop[i+4+(0%4)] : initial_pop[i+0+(0%4)]; // 9 i = 0
+        // winners[1] = random_vals[1] == 1 ? initial_pop[i+4+(1%4)] : initial_pop[i+0+(1%4)]; // 5 i = 0
+        // winners[2] = random_vals[2] == 1 ? initial_pop[i+4+(2%4)] : initial_pop[i+0+(2%4)]; // 10 i = 0
+        // winners[3] = random_vals[3] == 1 ? initial_pop[i+4+(3%4)] : initial_pop[i+0+(3%4)]; // 10
+        // j -> 4 -8
+        // winners[4] = random_vals[4] == 1 ? initial_pop[i+12+(0%4)] : initial_pop[i+8+(0%4)];
+        // winners[5] = random_vals[5] == 1 ? initial_pop[i+12+(1%4)] : initial_pop[i+8+(1%4)];
+        // winners[6] = random_vals[6] == 1 ? initial_pop[i+12+(2%4)] : initial_pop[i+8+(2%4)];
+        // winners[7] = random_vals[7] == 1 ? initial_pop[i+12+(3%4)] : initial_pop[i+8+(3%4)];
+
+        int k = 0;
         for (int j = 0; j <= (SIZE_OF_INITIAL_POPULATION / 2) - 3; j++)
         {
-            if (_mm256_movemask_pd(result_0) == 15)
+            while ()
+            {
+                winners[j] = random_vals[j] == 1 ? initial_population[i + (k + 4) + (j % 4)] : initial_population[i + k + (j % 4)];
+                k += 4;
+            }
+        }
+
+        for (int j = 0; j <= (SIZE_OF_INITIAL_POPULATION / 2) - 3; j++)
+        {
+            if (random_vals[j] == 1)
             {
                 winners[j] = initial_population[i + 0];
             }
