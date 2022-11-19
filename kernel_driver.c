@@ -117,8 +117,8 @@ int main(){
   //       }
   // } 
 
- return 0;
-
+  
  free(population);
+ return 0;
 
 }
