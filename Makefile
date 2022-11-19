@@ -10,7 +10,8 @@ compile_play:
 	$(CC) $(CFLAGS) $(OBJS) playground_selection.c  -o playground_selection.x -march=native
 
 run:
-	./kernel_d.x
+	./kernel_d.x 10
+
 
 clean:
 	rm -f *.x *~ *.o *~ *.S
