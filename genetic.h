@@ -43,26 +43,30 @@ double* convertColMajorSIMD(double* matrix, int rowNum, int colNum){
 }
 
 //  TODO : Convert row major to column major
-__m256d fitness(double *weights, double *values_d, double *representation)
-{   
+double *fitness(double *weights, double *values_d, double *representation)
+{
+
+    double* fitnessArray;
+    posix_memalign((void*) &fitnessArray, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double));
+
     // representation X representation:
     // COLUMN major order
     // 12 bits for 1 individual. Eg: [0, 0, 1, 1, ...]
     // 12 bits for 2nd individual
     // ...
-    // 
+    //
     // Currently X = 4 .
     // Algorithm
     // Broadcast weights
     // __m256d _mm256_broadcast_sd (double const * mem_addr)
-    double const val = 20.0; //MAX_KNAPSACK_WEIGHT;
-    __m256d max_knapsack_weight = _mm256_broadcast_sd(&val);
-    __m256d weight = _mm256_broadcast_sd(&weights[0]);
-    __m256d values = _mm256_broadcast_sd(&values_d[0]);
-    __m256d i = _mm256_loadu_pd(&representation[0]); 
-    __m256d total_weights = _mm256_fmadd_pd(i, weight, total_weights);
-    __m256d total_values = _mm256_fmadd_pd(i, values, total_values);
+    double val = 20.0; 
+    // MAX_KNAPSACK_WEIGHT;
+    int offset = SIZE_OF_INITIAL_POPULATION;
 
+
+    __m256d max_knapsack_weight = _mm256_broadcast_sd(&val);
+    
+    __m256d weight_1 = _mm256_broadcast_sd(&weights[0]);
     __m256d weight_2 = _mm256_broadcast_sd(&weights[1]);
     __m256d weight_3 = _mm256_broadcast_sd(&weights[2]);
     __m256d weight_4 = _mm256_broadcast_sd(&weights[3]);
@@ -76,7 +80,7 @@ __m256d fitness(double *weights, double *values_d, double *representation)
     __m256d weight_12 = _mm256_broadcast_sd(&weights[11]);
     
     // Broadcast values
-
+    __m256d values_1 = _mm256_broadcast_sd(&values_d[0]);
     __m256d values_2 = _mm256_broadcast_sd(&values_d[1]);
     __m256d values_3 = _mm256_broadcast_sd(&values_d[2]);
     __m256d values_4 = _mm256_broadcast_sd(&values_d[3]);
@@ -88,29 +92,38 @@ __m256d fitness(double *weights, double *values_d, double *representation)
     __m256d values_10 = _mm256_broadcast_sd(&values_d[9]);
     __m256d values_11 = _mm256_broadcast_sd(&values_d[10]);
     __m256d values_12 = _mm256_broadcast_sd(&values_d[11]);
+
+    for(int k=0; k < SIZE_OF_INITIAL_POPULATION; k+=4){
+
+    __m256d total_weights = {0, 0, 0, 0};
+    __m256d total_values = {0, 0, 0, 0};
     
+
     // // Broadcast MAX_KNAPSACK_WEIGHT
 
     // // One Independent Operation - One ouptut.
-    
+
     // // 12 different FMAs to give 4 different outputs
     // // __m256d _mm256_fmadd_pd (__m256d a, __m256d b, __m256d c)
     // // Each fma is loading the corresponding individual bit at i and the broadcasted weight at i
     // // 12 such fmas to get 4 outputs
     // // i[0][0], i[1][0], i[2][0], i[3][0]* fma(weight[0])
-    __m256d i_2 = _mm256_loadu_pd(&representation[4]); 
-    __m256d i_3 = _mm256_loadu_pd(&representation[8]); 
-    __m256d i_4 = _mm256_loadu_pd(&representation[16]); 
-    __m256d i_5 = _mm256_loadu_pd(&representation[20]); 
-    __m256d i_6 = _mm256_loadu_pd(&representation[24]); 
-    __m256d i_7 = _mm256_loadu_pd(&representation[28]); 
-    __m256d i_8 = _mm256_loadu_pd(&representation[32]); 
-    __m256d i_9 = _mm256_loadu_pd(&representation[36]); 
-    __m256d i_10 = _mm256_loadu_pd(&representation[40]); 
-    __m256d i_11 = _mm256_loadu_pd(&representation[44]); 
-    __m256d i_12 = _mm256_loadu_pd(&representation[48]); 
+    __m256d i_1 = _mm256_loadu_pd(&representation[offset*0 + k]);
+    __m256d i_2 = _mm256_loadu_pd(&representation[offset*1 + k]);
+    __m256d i_3 = _mm256_loadu_pd(&representation[offset*2 + k]);
+    __m256d i_4 = _mm256_loadu_pd(&representation[offset*3 + k]);
+    __m256d i_5 = _mm256_loadu_pd(&representation[offset*4 + k]);
+    __m256d i_6 = _mm256_loadu_pd(&representation[offset*5 + k]);
+    __m256d i_7 = _mm256_loadu_pd(&representation[offset*6 + k]);
+    __m256d i_8 = _mm256_loadu_pd(&representation[offset*7 + k]);
+    __m256d i_9 = _mm256_loadu_pd(&representation[offset*8 + k]);
+    __m256d i_10 = _mm256_loadu_pd(&representation[offset*9 + k]);
+    __m256d i_11 = _mm256_loadu_pd(&representation[offset*10 + k]);
+    __m256d i_12 = _mm256_loadu_pd(&representation[offset*11 + k]);
+
 
     
+    total_weights = _mm256_fmadd_pd(i_1, weight_1, total_weights);
     total_weights = _mm256_fmadd_pd(i_2, weight_2, total_weights);
     total_weights = _mm256_fmadd_pd(i_3, weight_3, total_weights);
     total_weights = _mm256_fmadd_pd(i_4, weight_4, total_weights);
@@ -124,6 +137,7 @@ __m256d fitness(double *weights, double *values_d, double *representation)
     total_weights = _mm256_fmadd_pd(i_12, weight_12, total_weights);
 
 
+    total_values = _mm256_fmadd_pd(i_1, values_1, total_values);
     total_values = _mm256_fmadd_pd(i_2, values_2, total_values);
     total_values = _mm256_fmadd_pd(i_3, values_3, total_values);
     total_values = _mm256_fmadd_pd(i_4, values_4, total_values);
@@ -135,15 +149,19 @@ __m256d fitness(double *weights, double *values_d, double *representation)
     total_values = _mm256_fmadd_pd(i_10, values_10, total_values);
     total_values = _mm256_fmadd_pd(i_11, values_11, total_values);
     total_values = _mm256_fmadd_pd(i_12, values_12, total_values);
-    
+
+
     //__m256d _mm256_cmp_pd (__m256d a, __m256d b, const int imm8)
     // 2 is OP Less Than Equal to
-    __m256d ret_cmp = _mm256_cmp_pd(total_weights, max_knapsack_weight, 2); 
+    // TODO
+    __m256d ret_cmp = _mm256_cmp_pd(total_weights, max_knapsack_weight, 2);
     // ret_cmp & total_values
-    total_values = _mm256_and_pd (ret_cmp, total_values);
-    return total_values;
-
+    total_values = _mm256_and_pd(ret_cmp, total_values);
+        _mm256_storeu_pd(&fitnessArray[k], total_values);
+    }
+    return fitnessArray;
 }
+
 
 
 // double *selection(double *weights, double *values, double *initial_population)
@@ -203,93 +221,33 @@ for(int i=0; i<popSize; i+=4){
     if(cmp[(i/2)%4] != 0){
 
     
-    __m256d p_10 = _mm256_loadu_pd(&representation[i*12+0]);
     __m256d p_11 = _mm256_loadu_pd(&representation[i*12+4]);
-    __m256d p_12 = _mm256_loadu_pd(&representation[i*12+8]);
 
-    __m256d p_20 = _mm256_loadu_pd(&representation[i*12+12]);
     __m256d p_21 = _mm256_loadu_pd(&representation[i*12+16]);
-    __m256d p_22 = _mm256_loadu_pd(&representation[i*12+20]);
 
     __m256d tmp_1 = _mm256_permute2f128_pd(p_11, p_21, 0|(3<<4));
     __m256d tmp_2 = _mm256_permute2f128_pd(p_21, p_11, 0|(3<<4));
 
     // first child
-    _mm256_storeu_pd(&representation[i*12+0], p_10);
     _mm256_storeu_pd(&representation[i*12+4], tmp_1);
-    _mm256_storeu_pd(&representation[i*12+8], p_12);
 
     // second child
-    _mm256_storeu_pd(&representation[i*12+12], p_20);
     _mm256_storeu_pd(&representation[i*12+16], tmp_2);
-    _mm256_storeu_pd(&representation[i*12+20], p_22);
     
 
     // repeat one time for larger register usage
-    __m256d p_30 = _mm256_loadu_pd(&representation[i*12+24]);
     __m256d p_31 = _mm256_loadu_pd(&representation[i*12+28]);
-    __m256d p_32 = _mm256_loadu_pd(&representation[i*12+32]);
 
-    __m256d p_40 = _mm256_loadu_pd(&representation[i*12+36]);
     __m256d p_41 = _mm256_loadu_pd(&representation[i*12+40]);
-    __m256d p_42 = _mm256_loadu_pd(&representation[i*12+44]);
 
     tmp_1 = _mm256_permute2f128_pd(p_31, p_41, 0|(3<<4));
     tmp_2 = _mm256_permute2f128_pd(p_41, p_31, 0|(3<<4));
     
     // first child
-    _mm256_storeu_pd(&representation[i*12+24], p_30);
     _mm256_storeu_pd(&representation[i*12+28], tmp_1);
-    _mm256_storeu_pd(&representation[i*12+32], p_32);
 
     // second child
-    _mm256_storeu_pd(&representation[i*12+36], p_40);
     _mm256_storeu_pd(&representation[i*12+40], tmp_2);
-    _mm256_storeu_pd(&representation[i*12+44], p_42);
-
-    }
-    else{
-
-    // keep the same
-    __m256d p_10 = _mm256_loadu_pd(&representation[i*12+0]);
-    __m256d p_11 = _mm256_loadu_pd(&representation[i*12+4]);
-    __m256d p_12 = _mm256_loadu_pd(&representation[i*12+8]);
-
-    __m256d p_20 = _mm256_loadu_pd(&representation[i*12+12]);
-    __m256d p_21 = _mm256_loadu_pd(&representation[i*12+16]);
-    __m256d p_22 = _mm256_loadu_pd(&representation[i*12+20]);
-
-
-    // first child
-    _mm256_storeu_pd(&representation[i*12+0], p_10);
-    _mm256_storeu_pd(&representation[i*12+4], p_11);
-    _mm256_storeu_pd(&representation[i*12+8], p_12);
-
-    // second child
-    _mm256_storeu_pd(&representation[i*12+12], p_20);
-    _mm256_storeu_pd(&representation[i*12+16], p_21);
-    _mm256_storeu_pd(&representation[i*12+20], p_22);
-
-    // repeat for one more time for more usage of registers
-    // keep the same
-    __m256d p_30 = _mm256_loadu_pd(&representation[i*12+24]);
-    __m256d p_31 = _mm256_loadu_pd(&representation[i*12+28]);
-    __m256d p_32 = _mm256_loadu_pd(&representation[i*12+32]);
-
-    __m256d p_40 = _mm256_loadu_pd(&representation[i*12+36]);
-    __m256d p_41 = _mm256_loadu_pd(&representation[i*12+40]);
-    __m256d p_42 = _mm256_loadu_pd(&representation[i*12+44]);
-
-
-    // first child
-    _mm256_storeu_pd(&representation[i*12+24], p_30);
-    _mm256_storeu_pd(&representation[i*12+28], p_31);
-    _mm256_storeu_pd(&representation[i*12+32], p_32);
-
-    // second child
-    _mm256_storeu_pd(&representation[i*12+36], p_40);
-    _mm256_storeu_pd(&representation[i*12+40], p_41);
-    _mm256_storeu_pd(&representation[i*12+44], p_42);
 
     }
 }
