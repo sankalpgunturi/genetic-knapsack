@@ -43,13 +43,11 @@ double* convertColMajorSIMD(double* matrix, int rowNum, int colNum){
 }
 
 //  TODO : Convert row major to column major
-double *fitness(double *weights, double *values_d, double *representation)
+double *fitness(double *weights, double *values_d, double *representation, double *fitnessArray)
 {   
     int SIZE_OF_INITIAL_POPULATION = 256;
 
-    double* fitnessArray;
-    posix_memalign((void*) &fitnessArray, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double));
-
+   
     representation = convertColMajor(representation, SIZE_OF_INITIAL_POPULATION, 12 );
     // representation X representation:
     // COLUMN major order
@@ -165,14 +163,10 @@ double *fitness(double *weights, double *values_d, double *representation)
 }
 
 
-double *selection(double *weights, double *values, double *initial_population)
+double *selection(double *weights, double *values, double *initial_population, double *contenders, double *winners, double *fitnessArray)
 {   
-    int SIZE_OF_INITIAL_POPULATION = 256;
-    double *contenders, *winners;
-    posix_memalign((void*) &contenders, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double)); 
-    posix_memalign((void*) &winners, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double));
-
-    contenders = fitness(weights, values, initial_population);
+    
+    contenders = fitness(weights, values, initial_population, fitnessArray);
 
     __m256d contenders_set_0 , contenders_set_1; // contenders_set_2, contenders_set_3, contenders_set_4, contenders_set_5;
     __m256d rep_0_1, rep_0_2, rep_0_3, rep_1_1, rep_1_2, rep_1_3;
@@ -230,6 +224,7 @@ double *selection(double *weights, double *values, double *initial_population)
         }
         f+=4;
     }
+
     }
 
 

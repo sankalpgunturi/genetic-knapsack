@@ -13,7 +13,7 @@ static __inline__ unsigned long long rdtsc(void) {
   return ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 );
 }
 
-int main(){
+int main(int argc, char** argv){
   double *population, *selection_pop;
   int POPULATION_SIZE = 256;
   int NUMBER_OF_ITEMS = 12;
@@ -21,6 +21,13 @@ int main(){
   posix_memalign((void*) &population, 64, POPULATION_SIZE * 12 * sizeof(double));
   posix_memalign((void*) &selection_pop, 64, (POPULATION_SIZE / 2) * 12 * sizeof(double));
   srand(time(NULL));
+  if (argc < 2){
+    printf("kernel_d.c <<Number of Generations>>\n");
+    exit(0);
+  }  
+  else{
+    NUMBER_OF_GENERATIONS = atoi(argv[1]);
+  }
   
   int skip_index = 15;
   FILE *fp = fopen("POPULATION_4096.txt", "r");
@@ -54,18 +61,18 @@ int main(){
         fscanf(fp, "%s", buff);
       }
       rep_fit = 0;
-      printf("\n");
+      //printf("\n");
     } else if ( (i )% 12 == 0) {
       //After every 12 items
       for(int k =0; k < 12*14; k++) {
         fscanf(fp, "%s", buff);
       }
-      printf("\t Fitness val : %.2f \n", (rep_fit));
+      //printf("\t Fitness val : %.2f \n", (rep_fit));
       rep_fit = 0;
     } 
       fscanf(fp, "%s", buff);
       population[i] = buff[0] - 48.0;
-      printf(" %.2f ", population[i]);
+      //printf(" %.2f ", population[i]);
       if (population[i] == 1.0) {
         rep_fit += weights[i%12];
       }
@@ -88,25 +95,50 @@ int main(){
   values[10] = 2;
   values[11] = 3;
 
-  rep_fit = 0;
-  selection_pop = selection(weights, values, population);
-  printf("\nFIRST SELECTION:\n");
-  for (int i = 0; i < 128 * NUMBER_OF_ITEMS; i++){
-        printf(" %.2f ",selection_pop[i]);
-        if (selection_pop[i] == 1.0) {
-          rep_fit += weights[i%12];
+  // rep_fit = 0;
+  // selection_pop = selection(weights, values, population);
+  // printf("\nFIRST SELECTION:\n");
+  // for (int i = 0; i < 128 * NUMBER_OF_ITEMS; i++){
+  //       printf(" %.2f ",selection_pop[i]);
+  //       if (selection_pop[i] == 1.0) {
+  //         rep_fit += weights[i%12];
           
-        }
-        if ((i+1) %12 ==0) {
-          printf("\t Fitness: %.2f \n",rep_fit);
-          rep_fit = 0;
-        }
+  //       }
+  //       if ((i+1) %12 ==0) {
+  //         printf("\t Fitness: %.2f \n",rep_fit);
+  //         rep_fit = 0;
+  //       }
         
-  } 
-  //selection(weights, values, population);
+  // } 
+  int SIZE_OF_INITIAL_POPULATION = 256;
+  double* fitnessArray;
+  posix_memalign((void*) &fitnessArray, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double));
+
+  double *contenders, *winners;
+  posix_memalign((void*) &contenders, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double)); 
+  posix_memalign((void*) &winners, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double));
+
+  int sum =0;
+  int t1, t0;
+  for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
+    t0 = rdtsc();
+    selection(weights, values, population, contenders, winners, fitnessArray);
+    t1 = rdtsc();
+    sum += (t1-t0);
+  }
+  // int sum1 =0;
   // for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
+  //   t0 = rdtsc();
   //   crossover(population, POPULATION_SIZE, 0.25 );
+  //   t1 = rdtsc();
+  //   sum1 += (t1-t0);
+  // }
+  // int sum2 =0;
+  // for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
+  //   t0 = rdtsc();
   //   mutation(population, 0.15 );
+  //   t1 = rdtsc();
+  //   sum2 += (t1-t0);
   // }
   
   // printf("\nFINAL GENERATION:\n");
@@ -117,7 +149,9 @@ int main(){
   //       }
   // } 
 
-  
+  printf("# GENERATIONS | FLOPS/sec ");
+  // # No. of ops in one cycle x No. of generations / (throughput x SIMD_length) x Max. freq
+ printf("%.2f, %.2f\n", NUMBER_OF_GENERATIONS, (128*NUMBER_OF_GENERATIONS ) / ((double)(t1-t0)*(3.4/2.4)));
  free(population);
  return 0;
 
