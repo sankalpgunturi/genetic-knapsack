@@ -46,7 +46,8 @@ int main(){
   weights[9] = 0;
   weights[10] = 2;
   weights[11] = 3;
-  int rep_fit = 0;
+  double rep_fit = 0;
+
   for (int i = 0; i < POPULATION_SIZE * NUMBER_OF_ITEMS; i++){
     if ( i == 0) {
       for(int k =0; k < 12*14; k++) {
@@ -59,14 +60,16 @@ int main(){
       for(int k =0; k < 12*14; k++) {
         fscanf(fp, "%s", buff);
       }
-      printf("\t Fitness val : %.2f \n", (rep_fit/12.0));
+      printf("\t Fitness val : %.2f \n", (rep_fit));
       rep_fit = 0;
-      break;
     } 
       fscanf(fp, "%s", buff);
       population[i] = buff[0] - 48.0;
       printf(" %.2f ", population[i]);
-      rep_fit += weights[i%12];
+      if (population[i] == 1.0) {
+        //printf("\n i: %d  i mod 12: %d  %.2f + %.2f = %.2f ",i, i%12, weights[i%12], rep_fit, (rep_fit + weights[i%12]) );
+        rep_fit += weights[i%12];
+      }
    }
   
 

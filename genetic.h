@@ -222,8 +222,8 @@ double *selection(double *weights, double *values, double *initial_population)
             winner_1 = _mm256_blendv_pd(rep_1_2, rep_0_2, compare);
             winner_2 = _mm256_blendv_pd(rep_1_3, rep_0_3, compare);
 
-            _mm256_storeu_pd(&winners[(f*12+k*12+0)], winner_0); // i = 2, k = 0, winners[0] 
-            _mm256_storeu_pd(&winners[(f*12+k*12+4)], winner_1); //
+            _mm256_storeu_pd(&winners[(f*12+k*12+0)], winner_0);  
+            _mm256_storeu_pd(&winners[(f*12+k*12+4)], winner_1); 
             _mm256_storeu_pd(&winners[(f*12+k*12+8)], winner_2);
 
         }
