@@ -14,12 +14,12 @@ static __inline__ unsigned long long rdtsc(void) {
 }
 
 int main(){
-  double *population;
+  double *population, *selection_pop;
   int POPULATION_SIZE = 256;
   int NUMBER_OF_ITEMS = 12;
   int NUMBER_OF_GENERATIONS = 1;
   posix_memalign((void*) &population, 64, POPULATION_SIZE * 12 * sizeof(double));
-  
+  posix_memalign((void*) &selection_pop, 64, (POPULATION_SIZE / 2) * 12 * sizeof(double));
   srand(time(NULL));
   
   int skip_index = 15;
@@ -67,7 +67,6 @@ int main(){
       population[i] = buff[0] - 48.0;
       printf(" %.2f ", population[i]);
       if (population[i] == 1.0) {
-        //printf("\n i: %d  i mod 12: %d  %.2f + %.2f = %.2f ",i, i%12, weights[i%12], rep_fit, (rep_fit + weights[i%12]) );
         rep_fit += weights[i%12];
       }
    }
@@ -89,7 +88,22 @@ int main(){
   values[10] = 2;
   values[11] = 3;
 
-  selection(weights, values, population);
+  rep_fit = 0;
+  selection_pop = selection(weights, values, population);
+  printf("\nFIRST SELECTION:\n");
+  for (int i = 0; i < 128 * NUMBER_OF_ITEMS; i++){
+        printf(" %.2f ",selection_pop[i]);
+        if (selection_pop[i] == 1.0) {
+          rep_fit += weights[i%12];
+          
+        }
+        if ((i+1) %12 ==0) {
+          printf("\t Fitness: %.2f \n",rep_fit);
+          rep_fit = 0;
+        }
+        
+  } 
+  //selection(weights, values, population);
   // for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
   //   crossover(population, POPULATION_SIZE, 0.25 );
   //   mutation(population, 0.15 );
