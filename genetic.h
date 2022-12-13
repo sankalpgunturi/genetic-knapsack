@@ -2,7 +2,8 @@
 
 // #define NUMBER_OF_ITEMS 12
 // #define MAX_KNAPSACK_WEIGHT 15
-// #define SIZE_OF_INITIAL_POPULATION 256
+#define SIZE_OF_INITIAL_POPULATION 512
+#define ITEM_SIZE 128
 
 
 double* convertColMajor(double * matrix, int rowNum, int colNum){
@@ -45,125 +46,73 @@ double* convertColMajorSIMD(double* matrix, int rowNum, int colNum){
 //  TODO : Convert row major to column major
 double *fitness(double *weights, double *values_d, double *representation)
 {   
-    int SIZE_OF_INITIAL_POPULATION = 256;
-
-    double* fitnessArray;
+    // int SIZE_OF_INITIAL_POPULATION = 256;
+    double* fitnessArray = (double *)malloc((SIZE_OF_INITIAL_POPULATION) *sizeof(double));
     posix_memalign((void*) &fitnessArray, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double));
+    for(int i=0;i<SIZE_OF_INITIAL_POPULATION;i++){
+        fitnessArray[i]=0;
+    }
 
-    representation = convertColMajor(representation, SIZE_OF_INITIAL_POPULATION, 12 );
-    // representation X representation:
-    // COLUMN major order
-    // 12 bits for 1 individual. Eg: [0, 0, 1, 1, ...]
-    // 12 bits for 2nd individual
-    // ...
-    //
-    // Currently X = 4 .
-    // Algorithm
-    // Broadcast weights
-    // __m256d _mm256_broadcast_sd (double const * mem_addr)
-    double val = 10.0; 
-    // MAX_KNAPSACK_WEIGHT;
+    representation = convertColMajor(representation, SIZE_OF_INITIAL_POPULATION, ITEM_SIZE);
+    
+    double val = MAX_KNAPSACK_WEIGHT; 
     int offset = SIZE_OF_INITIAL_POPULATION;
 
-
     __m256d max_knapsack_weight = _mm256_broadcast_sd(&val);
-    
-    __m256d weight_1 = _mm256_broadcast_sd(&weights[0]);
-    __m256d weight_2 = _mm256_broadcast_sd(&weights[1]);
-    __m256d weight_3 = _mm256_broadcast_sd(&weights[2]);
-    __m256d weight_4 = _mm256_broadcast_sd(&weights[3]);
-    __m256d weight_5 = _mm256_broadcast_sd(&weights[4]);
-    __m256d weight_6 = _mm256_broadcast_sd(&weights[5]);
-    __m256d weight_7 = _mm256_broadcast_sd(&weights[6]);
-    __m256d weight_8 = _mm256_broadcast_sd(&weights[7]);
-    __m256d weight_9 = _mm256_broadcast_sd(&weights[8]);
-    __m256d weight_10 = _mm256_broadcast_sd(&weights[9]);
-    __m256d weight_11 = _mm256_broadcast_sd(&weights[10]);
-    __m256d weight_12 = _mm256_broadcast_sd(&weights[11]);
-    
-    // Broadcast values
-    __m256d values_1 = _mm256_broadcast_sd(&values_d[0]);
-    __m256d values_2 = _mm256_broadcast_sd(&values_d[1]);
-    __m256d values_3 = _mm256_broadcast_sd(&values_d[2]);
-    __m256d values_4 = _mm256_broadcast_sd(&values_d[3]);
-    __m256d values_5 = _mm256_broadcast_sd(&values_d[4]);
-    __m256d values_6 = _mm256_broadcast_sd(&values_d[5]);
-    __m256d values_7 = _mm256_broadcast_sd(&values_d[6]);
-    __m256d values_8 = _mm256_broadcast_sd(&values_d[7]);
-    __m256d values_9 = _mm256_broadcast_sd(&values_d[8]);
-    __m256d values_10 = _mm256_broadcast_sd(&values_d[9]);
-    __m256d values_11 = _mm256_broadcast_sd(&values_d[10]);
-    __m256d values_12 = _mm256_broadcast_sd(&values_d[11]);
 
-    for(int k=0; k < SIZE_OF_INITIAL_POPULATION; k+=4){
+    __m256d weight_1, weight_2, weight_3, weight_4;
 
-    __m256d total_weights = {0, 0, 0, 0};
-    __m256d total_values = {0, 0, 0, 0};
-    
+    __m256d values_1, values_2, values_3, values_4;
 
-    // // Broadcast MAX_KNAPSACK_WEIGHT
+    __m256d i_1, i_2, i_3, i_4;
 
-    // // One Independent Operation - One ouptut.
+    __m256d total_weights, total_values;
 
-    // // 12 different FMAs to give 4 different outputs
-    // // __m256d _mm256_fmadd_pd (__m256d a, __m256d b, __m256d c)
-    // // Each fma is loading the corresponding individual bit at i and the broadcasted weight at i
-    // // 12 such fmas to get 4 outputs
-    // // i[0][0], i[1][0], i[2][0], i[3][0]* fma(weight[0])
-    __m256d i_1 = _mm256_loadu_pd(&representation[offset*0 + k]);
-    __m256d i_2 = _mm256_loadu_pd(&representation[offset*1 + k]);
-    __m256d i_3 = _mm256_loadu_pd(&representation[offset*2 + k]);
-    __m256d i_4 = _mm256_loadu_pd(&representation[offset*3 + k]);
-    __m256d i_5 = _mm256_loadu_pd(&representation[offset*4 + k]);
-    __m256d i_6 = _mm256_loadu_pd(&representation[offset*5 + k]);
-    __m256d i_7 = _mm256_loadu_pd(&representation[offset*6 + k]);
-    __m256d i_8 = _mm256_loadu_pd(&representation[offset*7 + k]);
-    __m256d i_9 = _mm256_loadu_pd(&representation[offset*8 + k]);
-    __m256d i_10 = _mm256_loadu_pd(&representation[offset*9 + k]);
-    __m256d i_11 = _mm256_loadu_pd(&representation[offset*10 + k]);
-    __m256d i_12 = _mm256_loadu_pd(&representation[offset*11 + k]);
+    for(int k = 0; k < SIZE_OF_INITIAL_POPULATION; k += 4){
 
+        total_weights = _mm256_set_pd(0, 0, 0, 0);
+        total_values = _mm256_set_pd(0, 0, 0, 0);
 
-    
-    total_weights = _mm256_fmadd_pd(i_1, weight_1, total_weights);
-    total_weights = _mm256_fmadd_pd(i_2, weight_2, total_weights);
-    total_weights = _mm256_fmadd_pd(i_3, weight_3, total_weights);
-    total_weights = _mm256_fmadd_pd(i_4, weight_4, total_weights);
-    total_weights = _mm256_fmadd_pd(i_5, weight_5, total_weights);
-    total_weights = _mm256_fmadd_pd(i_6, weight_6, total_weights);
-    total_weights = _mm256_fmadd_pd(i_7, weight_7, total_weights);
-    total_weights = _mm256_fmadd_pd(i_8, weight_8, total_weights);
-    total_weights = _mm256_fmadd_pd(i_9, weight_9, total_weights);
-    total_weights = _mm256_fmadd_pd(i_10, weight_10, total_weights);
-    total_weights = _mm256_fmadd_pd(i_11, weight_11, total_weights);
-    total_weights = _mm256_fmadd_pd(i_12, weight_12, total_weights);
+        for(int id = 0; id < ITEM_SIZE; id += 4){
 
+            i_1 = _mm256_loadu_pd(&representation[(id*offset)+k]);
+            i_2 = _mm256_loadu_pd(&representation[(id+1)*offset+k]);
+            i_3 = _mm256_loadu_pd(&representation[(id+2)*offset+k]);
+            i_4 = _mm256_loadu_pd(&representation[(id+3)*offset+k]);
 
-    total_values = _mm256_fmadd_pd(i_1, values_1, total_values);
-    total_values = _mm256_fmadd_pd(i_2, values_2, total_values);
-    total_values = _mm256_fmadd_pd(i_3, values_3, total_values);
-    total_values = _mm256_fmadd_pd(i_4, values_4, total_values);
-    total_values = _mm256_fmadd_pd(i_5, values_5, total_values);
-    total_values = _mm256_fmadd_pd(i_6, values_6, total_values);
-    total_values = _mm256_fmadd_pd(i_7, values_7, total_values);
-    total_values = _mm256_fmadd_pd(i_8, values_8, total_values);
-    total_values = _mm256_fmadd_pd(i_9, values_9, total_values);
-    total_values = _mm256_fmadd_pd(i_10, values_10, total_values);
-    total_values = _mm256_fmadd_pd(i_11, values_11, total_values);
-    total_values = _mm256_fmadd_pd(i_12, values_12, total_values);
+            // reload values (since too many items, 
+            // in order to reuse register, we need to reload)
+            weight_1 = _mm256_broadcast_sd(&weights[id]);
+            weight_2 = _mm256_broadcast_sd(&weights[id+1]);
+            weight_3 = _mm256_broadcast_sd(&weights[id+2]);
+            weight_4 = _mm256_broadcast_sd(&weights[id+3]);
 
+            values_1 = _mm256_broadcast_sd(&values_d[id]);
+            values_2 = _mm256_broadcast_sd(&values_d[id+1]);
+            values_3 = _mm256_broadcast_sd(&values_d[id+2]);
+            values_4 = _mm256_broadcast_sd(&values_d[id+3]);
 
-    //__m256d _mm256_cmp_pd (__m256d a, __m256d b, const int imm8)
-    // 2 is OP Less Than Equal to
-    // TODO
-    __m256d ret_cmp = _mm256_cmp_pd(total_weights, max_knapsack_weight, 2);
-    // ret_cmp & total_values
-    total_values = _mm256_and_pd(ret_cmp, total_values);
+            total_weights = _mm256_fmadd_pd(i_1, weight_1, total_weights);
+            total_weights = _mm256_fmadd_pd(i_2, weight_2, total_weights);
+            total_weights = _mm256_fmadd_pd(i_3, weight_3, total_weights);
+            total_weights = _mm256_fmadd_pd(i_4, weight_4, total_weights);
+        
+            total_values = _mm256_fmadd_pd(i_1, values_1, total_values);
+            total_values = _mm256_fmadd_pd(i_2, values_2, total_values);
+            total_values = _mm256_fmadd_pd(i_3, values_3, total_values);
+            total_values = _mm256_fmadd_pd(i_4, values_4, total_values);
+         }
+
+        //__m256d _mm256_cmp_pd (__m256d a, __m256d b, const int imm8)
+        // 2 is OP Less Than Equal to
+        // TODO
+        __m256d ret_cmp = _mm256_cmp_pd(total_weights, max_knapsack_weight, 2);
+        // ret_cmp & total_values
+        total_values = _mm256_and_pd(ret_cmp, total_values);
         _mm256_storeu_pd(&fitnessArray[k], total_values);
     }
     return fitnessArray;
 }
-
 
 double *selection(double *weights, double *values, double *initial_population)
 {   
