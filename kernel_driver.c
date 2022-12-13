@@ -118,14 +118,16 @@ int main(int argc, char** argv){
   posix_memalign((void*) &contenders, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double)); 
   posix_memalign((void*) &winners, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double));
 
-  int sum =0;
-  int t1, t0;
-  for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
-    t0 = rdtsc();
-    selection(weights, values, population, contenders, winners, fitnessArray);
-    t1 = rdtsc();
-    sum += (t1-t0);
-  }
+  double sum2 =0;
+  double t1, t0;
+  // for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
+  //   t0 = rdtsc();
+  //   //printf("t0: %.2f ", t0);
+  //   selection(weights, values, population, contenders, winners, fitnessArray);
+  //   t1 = rdtsc();
+  //   //printf("t1: %.2f ", t1);
+  //   sum += (t1-t0);
+  // }
   // int sum1 =0;
   // for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
   //   t0 = rdtsc();
@@ -134,12 +136,14 @@ int main(int argc, char** argv){
   //   sum1 += (t1-t0);
   // }
   // int sum2 =0;
-  // for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
-  //   t0 = rdtsc();
-  //   mutation(population, 0.15 );
-  //   t1 = rdtsc();
-  //   sum2 += (t1-t0);
-  // }
+  
+  for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
+    t0 = rdtsc();
+    mutation(population, 1.0 );
+
+  t1 = rdtsc();
+  sum2 += (t1-t0);
+  }
   
   // printf("\nFINAL GENERATION:\n");
   // for (int i = 0; i < POPULATION_SIZE * NUMBER_OF_ITEMS; i++){
@@ -149,9 +153,12 @@ int main(int argc, char** argv){
   //       }
   // } 
 
-  printf("# GENERATIONS | FLOPS/sec ");
+  //printf("# GENERATIONS | FLOPS/sec \n");
   // # No. of ops in one cycle x No. of generations / (throughput x SIMD_length) x Max. freq
- printf("%.2f, %.2f\n", NUMBER_OF_GENERATIONS, (128*NUMBER_OF_GENERATIONS ) / ((double)(t1-t0)*(3.4/2.4)));
+  //printf("sum %.2f \n", sum);
+ //printf("%.2f, %.8f\n", (double)NUMBER_OF_GENERATIONS,( (2*(256+128)*12*(double)NUMBER_OF_GENERATIONS ))/ ( (double)(sum)*3.4/2.4) );
+ printf("%.2f, %.8f\n", (double)NUMBER_OF_GENERATIONS, ((2*24*256*(double)NUMBER_OF_GENERATIONS) / (double)(sum2)*3.4/2.4) * 3.4);
+ 
  free(population);
  return 0;
 

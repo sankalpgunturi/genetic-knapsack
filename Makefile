@@ -11,6 +11,15 @@ compile_play:
 
 run:
 	./kernel_d.x 10
+	./kernel_d.x 25
+	./kernel_d.x 100
+	./kernel_d.x 650
+	./kernel_d.x 1000
+	./kernel_d.x 2500
+	./kernel_d.x 4500
+	./kernel_d.x 6000
+	./kernel_d.x 8000
+	./kernel_d.x 10000
 
 
 clean:

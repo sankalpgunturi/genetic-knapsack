@@ -48,7 +48,7 @@ double *fitness(double *weights, double *values_d, double *representation, doubl
     int SIZE_OF_INITIAL_POPULATION = 256;
 
    
-    representation = convertColMajor(representation, SIZE_OF_INITIAL_POPULATION, 12 );
+    //representation = convertColMajor(representation, SIZE_OF_INITIAL_POPULATION, 12 );
     // representation X representation:
     // COLUMN major order
     // 12 bits for 1 individual. Eg: [0, 0, 1, 1, ...]
@@ -174,36 +174,36 @@ double *selection(double *weights, double *values, double *initial_population, d
     __m256d compare;
     int f = 0;
     for (int i = 0; i < 256; i+=4*2)
-    {   printf("\ni: %d\n", i);
+    {   //printf("\ni: %d\n", i);
         contenders_set_0 = _mm256_loadu_pd(&contenders[i]);     
         contenders_set_1 = _mm256_loadu_pd(&contenders[i + 4]);
         compare = _mm256_cmp_pd(contenders_set_0, contenders_set_1, 14); 
 
-        printf("contender_set_0_index: i : %d\n",i);
-        printf("contender_set_1_index: i+4: %d\n",i+4);
-        printf("winner f %d\n", f);
+        // printf("contender_set_0_index: i : %d\n",i);
+        // printf("contender_set_1_index: i+4: %d\n",i+4);
+        // printf("winner f %d\n", f);
 
-        printf("i = 0: k = 0; rep_0: 0 to 3, 4 to 7, 8 to 11\n");
-        printf("i = 0: k = 0; rep_1: 48 to 51, 52 to 55, 56 to 59\n");
-        printf("i = 0: k = 1; rep_0: 12 to 15, 16 to 19, 20 to 23\n");
-        printf("i = 0: k = 1; rep_1: 60 to 63, 64 to 67, 68 to 71\n");
-        printf("i = 0: k = 2; rep_0: 24 to 27, 28 to 31, 32 t0 35\n");
-        printf("i = 0: k = 2; rep_1: 72 to 75, 76 to 79, 80 to 83\n");
+        // printf("i = 0: k = 0; rep_0: 0 to 3, 4 to 7, 8 to 11\n");
+        // printf("i = 0: k = 0; rep_1: 48 to 51, 52 to 55, 56 to 59\n");
+        // printf("i = 0: k = 1; rep_0: 12 to 15, 16 to 19, 20 to 23\n");
+        // printf("i = 0: k = 1; rep_1: 60 to 63, 64 to 67, 68 to 71\n");
+        // printf("i = 0: k = 2; rep_0: 24 to 27, 28 to 31, 32 t0 35\n");
+        // printf("i = 0: k = 2; rep_1: 72 to 75, 76 to 79, 80 to 83\n");
 
         for (int k = 0; k < 4; k++) { 
-            //For each winner
-            printf("k: %d\n", k);
-            printf("rep_0_1: (i+k) %d to %d\n",(i*12+k*12), (i*12+k*12+3));
-            printf("rep_0_2: (i+k+4) %d to %d\n",(i*12+k*12+4), (i*12+k*12+7));
-            printf("rep_0_3: (i+k+8) %d to %d\n",(i*12+k*12+8), (i*12+k*12+11));
+            // //For each winner
+            // printf("k: %d\n", k);
+            // printf("rep_0_1: (i+k) %d to %d\n",(i*12+k*12), (i*12+k*12+3));
+            // printf("rep_0_2: (i+k+4) %d to %d\n",(i*12+k*12+4), (i*12+k*12+7));
+            // printf("rep_0_3: (i+k+8) %d to %d\n",(i*12+k*12+8), (i*12+k*12+11));
 
-            printf("rep_1_1: (i+(k+4)*12) %d to %d\n",(i*12+(k+4)*12), (i*12+(k+4)*12+3));
-            printf("rep_1_2: (i+(k+4)*12+4) %d to %d\n",(i*12+(k+4)*12+4), (i*12+(k+4)*12+7));
-            printf("rep_1_3: (i+(k+4)*12+8) %d to %d\n",(i*12+(k+4)*12+8), (i*12+(k+4)*12+11));
+            // printf("rep_1_1: (i+(k+4)*12) %d to %d\n",(i*12+(k+4)*12), (i*12+(k+4)*12+3));
+            // printf("rep_1_2: (i+(k+4)*12+4) %d to %d\n",(i*12+(k+4)*12+4), (i*12+(k+4)*12+7));
+            // printf("rep_1_3: (i+(k+4)*12+8) %d to %d\n",(i*12+(k+4)*12+8), (i*12+(k+4)*12+11));
 
-            printf("winners_0:  %d to %d\n",(f*12+k*12+0), (f*12+k*12+3));
-            printf("winners_1:  %d to %d\n",(f*12+k*12+4), (f*12+k*12+7));
-            printf("winners_2:  %d to %d\n",(f*12+k*12+8), (f*12+k*12+11));
+            // printf("winners_0:  %d to %d\n",(f*12+k*12+0), (f*12+k*12+3));
+            // printf("winners_1:  %d to %d\n",(f*12+k*12+4), (f*12+k*12+7));
+            // printf("winners_2:  %d to %d\n",(f*12+k*12+8), (f*12+k*12+11));
 
             rep_0_1 = _mm256_loadu_pd(&initial_population[(i*12+k*12)]); 
             rep_0_2 = _mm256_loadu_pd(&initial_population[(i*12+k*12+4)]);
