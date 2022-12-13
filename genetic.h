@@ -182,15 +182,15 @@ double *selection(double *weights, double *values, double *initial_population)
     }
 
 
-void crossover(double* representation, int popSize, double crossover_rate)
+void crossover(double* representation, int popSize, double crossover_rate, double *random)
 {
 
     __m256d CROSS_RATE =  _mm256_broadcast_sd(&crossover_rate);
 
-    double random0, random1, random2, random3;
+    // double random0, random1, random2, random3;
 
-    double* cmp;
-    posix_memalign((void*) &cmp, 64, 4 * sizeof(double));
+    // double* cmp;
+    // posix_memalign((void*) &cmp, 64, 4 * sizeof(double));
 
 // parents:
 // 0 1 0 1 1 0 | 1 0 0 0 0 0 
@@ -199,16 +199,16 @@ void crossover(double* representation, int popSize, double crossover_rate)
 // children:
 // 0 1 0 1 1 0 | 0 0 0 1 1 1 
 // 1 1 1 1 1 1 | 1 0 0 0 0 0 
-
+int j = 0;
 for(int i=0; i<popSize; i+=8){
 
 
-        random0 = (rand() % (100 - 0))/100.00;
-        random1 = (rand() % (100 - 0))/100.00;
-        random2 = (rand() % (100 - 0))/100.00;
-        random3 = (rand() % (100 - 0))/100.00;
+        // random0 = (rand() % (100 - 0))/100.00;
+        // random1 = (rand() % (100 - 0))/100.00;
+        // random2 = (rand() % (100 - 0))/100.00;
+        // random3 = (rand() % (100 - 0))/100.00;
         // generate random numbers
-        __m256d RANDOM = _mm256_set_pd(random0, random1, random2, random3);
+        __m256d RANDOM = _mm256_set_pd(random[j], random[j+1], random[j+2], random[j+3]);
         __m256d compare = _mm256_cmp_pd(CROSS_RATE, RANDOM, 14);
         _mm256_storeu_pd(&cmp[0], compare);
 
@@ -272,7 +272,9 @@ for(int i=0; i<popSize; i+=8){
     _mm256_storeu_pd(&representation[(i+7)*12+4], tmp_4);
     }
     // }
+    j+=4;
     }
+
 
 }
 
