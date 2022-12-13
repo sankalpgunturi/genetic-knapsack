@@ -182,13 +182,11 @@ double *selection(double *weights, double *values, double *initial_population)
     }
 
 
-void crossover(double* representation, int popSize, double crossover_rate, double *random)
+void crossover(double* representation, int popSize, double crossover_rate, double *random, double *cmp)
 {
 
     __m256d CROSS_RATE =  _mm256_broadcast_sd(&crossover_rate);
-
     // double random0, random1, random2, random3;
-
     // double* cmp;
     // posix_memalign((void*) &cmp, 64, 4 * sizeof(double));
 
@@ -278,7 +276,7 @@ for(int i=0; i<popSize; i+=8){
 
 }
 
-double *mutation(double *representation, double MUTATION_RATE , double *random_vals)
+double *mutation(double *representation, double MUTATION_RATE, double *random_vals, int popSize)
 {   
     // Row ordering of representation
     double const mr = MUTATION_RATE;
@@ -286,7 +284,7 @@ double *mutation(double *representation, double MUTATION_RATE , double *random_v
     __m256d RANDOM, compare, i1_1, i1_2, i1_3, i1_4, i1_5, i1_6, i1_7, i1_8, i1_9, i1_10, i1_11, i1_12;
     
     __m256d MUTATION_RATE_ =  _mm256_broadcast_sd(&mr);
-    for (int i =0; i< 256; i+=4 ) {
+    for (int i =0; i< popSize; i+=4 ) {
 
         RANDOM = _mm256_loadu_pd(&random_vals[i]); 
         compare = _mm256_cmp_pd(RANDOM, MUTATION_RATE_, 2);
@@ -343,4 +341,83 @@ double *mutation(double *representation, double MUTATION_RATE , double *random_v
 
 
     }
+}
+
+
+void crossover_and_mutation(double* representation, int popSize, double crossover_rate, double *random)
+{
+
+    __m256d CROSS_RATE =  _mm256_broadcast_sd(&crossover_rate);
+    __m256d ONES = _mm256_broadcast_sd(1.0);
+    __m256d RANDOM, compare, compare_mutation, tmp_1, tmp_2, i1_1, i1_2, i1_3, i1_4, i1_5, i1_6, p_11,p_21; // i1_7, i1_8, i1_9; // i1_10, i1_11, i1_12;
+    for(int i=0; i<popSize; i+=4){
+
+        // generate random numbers
+        //RANDOM = _mm256_set_pd(random[j], random[j+1], random[j+2], random[j+3]);
+        // or 
+        RANDOM = _mm256_loadu_pd(&random[i]); 
+
+        compare = _mm256_cmp_pd(CROSS_RATE, RANDOM, 14);
+        _mm256_storeu_pd(&cmp[0], compare);
+
+        compare_mutation = _mm256_cmp_pd(RANDOM, MUTATION_RATE_, 2);
+        compare_mutation = _mm256_and_pd(compare, ONES);
+        _mm256_storeu_pd(&cmp[0], compare);
+
+        if(cmp[0] != 0){
+            p_11 = _mm256_loadu_pd(&representation[i*12+4]);
+            p_21 = _mm256_loadu_pd(&representation[(i+1)*12+4]);
+
+            tmp_1 = _mm256_permute2f128_pd(p_11, p_21, 0|(3<<4));
+            // first child
+            //_mm256_storeu_pd(&representation[i*12+4], tmp_1);
+
+            tmp_2 = _mm256_permute2f128_pd(p_21, p_11, 0|(3<<4));
+            // second child
+            //_mm256_storeu_pd(&representation[(i+1)*12+4], tmp_2);
+            
+        }
+
+        if(cmp[1] != 0){
+            p_11 = _mm256_loadu_pd(&representation[(i+2)*12+4]);
+            p_21 = _mm256_loadu_pd(&representation[(i+3)*12+4]);
+
+            tmp_1 = _mm256_permute2f128_pd(p_11, p_21, 0|(3<<4));
+            // first child
+            _mm256_storeu_pd(&representation[(i+2)*12+4], tmp_1);
+
+            tmp_2 = _mm256_permute2f128_pd(p_21, p_11, 0|(3<<4));
+            // second child
+            _mm256_storeu_pd(&representation[(i+3)*12+4], tmp_2);
+        }
+
+        if(cmp[2] != 0){
+            p_11 = _mm256_loadu_pd(&representation[(i+4)*12+4]);
+            p_21 = _mm256_loadu_pd(&representation[(i+5)*12+4]);
+
+            tmp_1 = _mm256_permute2f128_pd(p_11, p_21, 0|(3<<4));
+            // first child
+            _mm256_storeu_pd(&representation[(i+4)*12+4], tmp_1);
+
+            tmp_2 = _mm256_permute2f128_pd(p_21, p_11, 0|(3<<4));
+            // second child
+            _mm256_storeu_pd(&representation[(i+5)*12+4], tmp_2);
+        }
+
+        if(cmp[3] != 0){
+            p_11 = _mm256_loadu_pd(&representation[(i+6)*12+4]);
+            p_21 = _mm256_loadu_pd(&representation[(i+7)*12+4]);
+
+            tmp_1 = _mm256_permute2f128_pd(p_11, p_21, 0|(3<<4));
+            // first child
+            _mm256_storeu_pd(&representation[(i+6)*12+4], tmp_1);
+
+            tmp_2 = _mm256_permute2f128_pd(p_21, p_11, 0|(3<<4));
+            // second child
+            _mm256_storeu_pd(&representation[(i+7)*12+4], tmp_2);
+        }
+    // }
+    }
+
+
 }
