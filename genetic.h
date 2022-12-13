@@ -276,28 +276,17 @@ for(int i=0; i<popSize; i+=8){
 
 }
 
-double *mutation(double *representation, double MUTATION_RATE)
+double *mutation(double *representation, double MUTATION_RATE , double *random_vals)
 {   
     // Row ordering of representation
     double const mr = MUTATION_RATE;
-    double *random_vals;
-    posix_memalign((void*) &random_vals, 64, 4 * sizeof(double));
-    random_vals[0] = 1.0;
-    random_vals[1] = 1.0;
-    random_vals[2] = 1.0;
-    random_vals[3] = 1.0;
-    __m256d ONES = _mm256_loadu_pd(&random_vals[0]);
+    __m256d ONES = _mm256_broadcast_sd(1.0);
     __m256d RANDOM, compare, i1_1, i1_2, i1_3, i1_4, i1_5, i1_6, i1_7, i1_8, i1_9, i1_10, i1_11, i1_12;
     
     __m256d MUTATION_RATE_ =  _mm256_broadcast_sd(&mr);
     for (int i =0; i< 256; i+=4 ) {
 
-        random_vals[0] = (rand() % (100 - 0))/100.00;
-        random_vals[1] = (rand() % (100 - 0))/100.00;
-        random_vals[2] = (rand() % (100 - 0))/100.00;
-        random_vals[3] = (rand() % (100 - 0))/100.00;
-
-        RANDOM = _mm256_loadu_pd(&random_vals[0]);
+        RANDOM = _mm256_loadu_pd(&random_vals[i]); 
         compare = _mm256_cmp_pd(RANDOM, MUTATION_RATE_, 2);
         compare = _mm256_and_pd(compare, ONES);
         
