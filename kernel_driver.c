@@ -15,11 +15,14 @@ static __inline__ unsigned long long rdtsc(void) {
 
 int main(){
   double *population, *selection_pop;
-  int POPULATION_SIZE = 256;
+  double *random, *cmp;
+  int POPULATION_SIZE = 256*2;
   int NUMBER_OF_ITEMS = 12;
-  int NUMBER_OF_GENERATIONS = 1;
+  int NUMBER_OF_GENERATIONS = 100000;
   posix_memalign((void*) &population, 64, POPULATION_SIZE * 12 * sizeof(double));
   posix_memalign((void*) &selection_pop, 64, (POPULATION_SIZE / 2) * 12 * sizeof(double));
+  posix_memalign((void*) &random, 64, POPULATION_SIZE * sizeof(double));
+  posix_memalign((void*) &cmp, 64, 4 * sizeof(double));
   srand(time(NULL));
   
   int skip_index = 15;
@@ -71,7 +74,6 @@ int main(){
       }
    }
   
-
   double *values;
   posix_memalign((void*) &values, 64, 12 * sizeof(double));
 
@@ -103,19 +105,25 @@ int main(){
         }
         
   } 
+  for (int i = 0; i < POPULATION_SIZE; i++){
+    random[i] = (rand() % (128 - 0))/128.00;
+  }
   //selection(weights, values, population);
   // for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
   //   crossover(population, POPULATION_SIZE, 0.25 );
   //   mutation(population, 0.15 );
   // }
-  
-  // printf("\nFINAL GENERATION:\n");
-  // for (int i = 0; i < POPULATION_SIZE * NUMBER_OF_ITEMS; i++){
-  //       printf(" %.2f ",population[i]);
-  //       if ((i+1) %12 ==0) {
-  //         printf("\n");
-  //       }
-  // } 
+  for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
+    crossover(population, POPULATION_SIZE, 0.25, random, cmp );
+    mutation(population, 0.15, random, POPULATION_SIZE );
+  }
+  printf("\nFINAL GENERATION:\n");
+  for (int i = 0; i < POPULATION_SIZE * NUMBER_OF_ITEMS; i++){
+        printf(" %.2f ",population[i]);
+        if ((i+1) %12 ==0) {
+          printf("\n");
+        }
+  } 
 
   
  free(population);

@@ -1,9 +1,9 @@
 #include "immintrin.h"
 
 // #define NUMBER_OF_ITEMS 12
-// #define MAX_KNAPSACK_WEIGHT 15
-#define SIZE_OF_INITIAL_POPULATION 512
-#define ITEM_SIZE 128
+// // #define MAX_KNAPSACK_WEIGHT 15
+// #define SIZE_OF_INITIAL_POPULATION 512
+// #define ITEM_SIZE 128
 
 
 double* convertColMajor(double * matrix, int rowNum, int colNum){
@@ -46,7 +46,10 @@ double* convertColMajorSIMD(double* matrix, int rowNum, int colNum){
 //  TODO : Convert row major to column major
 double *fitness(double *weights, double *values_d, double *representation)
 {   
-    // int SIZE_OF_INITIAL_POPULATION = 256;
+    int SIZE_OF_INITIAL_POPULATION = 256;
+    int ITEM_SIZE=12;
+    int MAX_KNAPSACK_WEIGHT=15;
+
     double* fitnessArray = (double *)malloc((SIZE_OF_INITIAL_POPULATION) *sizeof(double));
     posix_memalign((void*) &fitnessArray, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double));
     for(int i=0;i<SIZE_OF_INITIAL_POPULATION;i++){
@@ -182,7 +185,7 @@ double *selection(double *weights, double *values, double *initial_population)
     }
 
 
-void crossover(double* representation, int popSize, double crossover_rate, double *random, double *cmp)
+void crossover(double* representation, int popSize, double crossover_rate, double *random, double* cmp)
 {
 
     __m256d CROSS_RATE =  _mm256_broadcast_sd(&crossover_rate);
@@ -280,7 +283,8 @@ double *mutation(double *representation, double MUTATION_RATE, double *random_va
 {   
     // Row ordering of representation
     double const mr = MUTATION_RATE;
-    __m256d ONES = _mm256_broadcast_sd(1.0);
+    double const one = 1;
+    __m256d ONES = _mm256_broadcast_sd(&one);
     __m256d RANDOM, compare, i1_1, i1_2, i1_3, i1_4, i1_5, i1_6, i1_7, i1_8, i1_9, i1_10, i1_11, i1_12;
     
     __m256d MUTATION_RATE_ =  _mm256_broadcast_sd(&mr);
@@ -344,12 +348,14 @@ double *mutation(double *representation, double MUTATION_RATE, double *random_va
 }
 
 
-void crossover_and_mutation(double* representation, int popSize, double crossover_rate, double *random)
+void crossover_and_mutation(double* representation, int popSize, double crossover_rate, double *random, double *cmp, double MUTATION_RATE)
 {
-
+    double const mr = MUTATION_RATE;
+    double const one = 1;
     __m256d CROSS_RATE =  _mm256_broadcast_sd(&crossover_rate);
-    __m256d ONES = _mm256_broadcast_sd(1.0);
-    __m256d RANDOM, compare, compare_mutation, tmp_1, tmp_2; 
+    __m256d MUTATION_RATE_ = _mm256_broadcast_sd(&mr);
+    __m256d ONES = _mm256_broadcast_sd(&one);
+    __m256d RANDOM, compare, compare_mutation, tmp_1, tmp_2, p_11, p_21; 
     for(int i=0; i<popSize; i+=4){
 
         // generate random numbers
