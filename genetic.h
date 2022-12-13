@@ -349,7 +349,7 @@ void crossover_and_mutation(double* representation, int popSize, double crossove
 
     __m256d CROSS_RATE =  _mm256_broadcast_sd(&crossover_rate);
     __m256d ONES = _mm256_broadcast_sd(1.0);
-    __m256d RANDOM, compare, compare_mutation, tmp_1, tmp_2, i1_1, i1_2, i1_3, i1_4, i1_5, i1_6, p_11,p_21; // i1_7, i1_8, i1_9; // i1_10, i1_11, i1_12;
+    __m256d RANDOM, compare, compare_mutation, tmp_1, tmp_2; 
     for(int i=0; i<popSize; i+=4){
 
         // generate random numbers
