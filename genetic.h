@@ -306,39 +306,49 @@ double *mutation(double *representation, double MUTATION_RATE)
         i1_3 = _mm256_loadu_pd(&representation[i+8]);
         i1_4 = _mm256_loadu_pd(&representation[i+12]);
         i1_5 = _mm256_loadu_pd(&representation[i+16]);
-        i1_6 = _mm256_loadu_pd(&representation[i+20]);
-        i1_7 = _mm256_loadu_pd(&representation[i+24]);
-        i1_8 = _mm256_loadu_pd(&representation[i+28]);
-        i1_9 = _mm256_loadu_pd(&representation[i+32]);
-        i1_10 = _mm256_loadu_pd(&representation[i+36]);
-        i1_11 = _mm256_loadu_pd(&representation[i+40]);
-        i1_12 = _mm256_loadu_pd(&representation[i+44]);
-
         i1_1 = _mm256_xor_pd(compare, i1_1); 
-        i1_2 = _mm256_xor_pd(compare, i1_2);
-        i1_3 = _mm256_xor_pd(compare, i1_3);
-        i1_4 = _mm256_xor_pd(compare, i1_4); 
-        i1_5 = _mm256_xor_pd(compare, i1_5);
-        i1_6 = _mm256_xor_pd(compare, i1_6);
-        i1_7 = _mm256_xor_pd(compare, i1_7); 
-        i1_8 = _mm256_xor_pd(compare, i1_8);
-        i1_9 = _mm256_xor_pd(compare, i1_9);
-        i1_10 = _mm256_xor_pd(compare, i1_10);
-        i1_11 = _mm256_xor_pd(compare, i1_11);
-        i1_12 = _mm256_xor_pd(compare, i1_12);
-
+        i1_6 = _mm256_loadu_pd(&representation[i+20]);
         _mm256_storeu_pd(&representation[i], i1_1);
+
+        i1_7 = _mm256_loadu_pd(&representation[i+24]);
+        i1_2 = _mm256_xor_pd(compare, i1_2);
         _mm256_storeu_pd(&representation[i+4], i1_2);
+
+        i1_8 = _mm256_loadu_pd(&representation[i+28]);
+        i1_3 = _mm256_xor_pd(compare, i1_3);
         _mm256_storeu_pd(&representation[i+8], i1_3);
+
+        i1_9 = _mm256_loadu_pd(&representation[i+32]);
+        i1_4 = _mm256_xor_pd(compare, i1_4); 
         _mm256_storeu_pd(&representation[i+12], i1_4);
+
+        i1_10 = _mm256_loadu_pd(&representation[i+36]);
+        i1_5 = _mm256_xor_pd(compare, i1_5);
         _mm256_storeu_pd(&representation[i+16], i1_5);
+
+        i1_11 = _mm256_loadu_pd(&representation[i+40]);
+        i1_6 = _mm256_xor_pd(compare, i1_6);
         _mm256_storeu_pd(&representation[i+20], i1_6);
+
+        i1_12 = _mm256_loadu_pd(&representation[i+44]);
+        i1_7 = _mm256_xor_pd(compare, i1_7); 
         _mm256_storeu_pd(&representation[i+24], i1_7);
+
+        i1_8 = _mm256_xor_pd(compare, i1_8);
         _mm256_storeu_pd(&representation[i+28], i1_8);
+
+        i1_9 = _mm256_xor_pd(compare, i1_9);
         _mm256_storeu_pd(&representation[i+32], i1_9);
+
+        i1_10 = _mm256_xor_pd(compare, i1_10);
         _mm256_storeu_pd(&representation[i+36], i1_10);
+
+        i1_11 = _mm256_xor_pd(compare, i1_11);
         _mm256_storeu_pd(&representation[i+40], i1_11);
+
+        i1_12 = _mm256_xor_pd(compare, i1_12);
         _mm256_storeu_pd(&representation[i+44], i1_12);
+
 
 
     }
