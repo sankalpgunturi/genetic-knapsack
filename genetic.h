@@ -1,9 +1,9 @@
 #include "immintrin.h"
 #include"omp.h"
 // #define NUMBER_OF_ITEMS 12
-// // #define MAX_KNAPSACK_WEIGHT 15
-// #define SIZE_OF_INITIAL_POPULATION 512
-// #define ITEM_SIZE 128
+#define MAX_KNAPSACK_WEIGHT 15
+#define SIZE_OF_INITIAL_POPULATION 512
+#define ITEM_SIZE 128
 
 
 double* convertColMajor(double * matrix, int rowNum, int colNum){
