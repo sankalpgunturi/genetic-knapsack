@@ -1,5 +1,5 @@
 #include "immintrin.h"
-
+#include"omp.h"
 // #define NUMBER_OF_ITEMS 12
 // // #define MAX_KNAPSACK_WEIGHT 15
 // #define SIZE_OF_INITIAL_POPULATION 512
@@ -42,21 +42,17 @@ double* convertColMajorSIMD(double* matrix, int rowNum, int colNum){
    
    return res;
 }
-
 //  TODO : Convert row major to column major
 double *fitness(double *weights, double *values_d, double *representation)
 {   
-    int SIZE_OF_INITIAL_POPULATION = 256;
-    int ITEM_SIZE=12;
-    int MAX_KNAPSACK_WEIGHT=15;
-
+    // int SIZE_OF_INITIAL_POPULATION = 256;
     double* fitnessArray = (double *)malloc((SIZE_OF_INITIAL_POPULATION) *sizeof(double));
     posix_memalign((void*) &fitnessArray, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double));
 
     double* weightsArray = (double *)malloc((SIZE_OF_INITIAL_POPULATION) *sizeof(double));
     posix_memalign((void*) &weightsArray, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double));
     
-    representation = convertColMajor(representation, SIZE_OF_INITIAL_POPULATION, ITEM_SIZE);
+    // representation = convertColMajor(representation, SIZE_OF_INITIAL_POPULATION, ITEM_SIZE);
     
     double val = MAX_KNAPSACK_WEIGHT; 
     int offset = SIZE_OF_INITIAL_POPULATION;
@@ -67,12 +63,13 @@ double *fitness(double *weights, double *values_d, double *representation)
 
     __m256d values_1, values_2, values_3, values_4;
 
-    __m256d i_1, i_2, i_3, i_4;
+    // __m256d i_1, i_2, i_3, i_4;
 
-    __m256d total_weights, total_values;
+    __m256d total_weights1, total_values1;
 
 
-
+    //         
+    #pragma omp parallel for num_threads(4)
     for(int id = 0; id < ITEM_SIZE; id += 4){
 
         // reload values (since too many items, 
@@ -88,16 +85,17 @@ double *fitness(double *weights, double *values_d, double *representation)
         values_4 = _mm256_broadcast_sd(&values_d[id+3]);
 
         for(int k = 0; k < SIZE_OF_INITIAL_POPULATION; k += 4){
-
+            // printf("%d\n", omp_get_thread_num());
             // total_weights = _mm256_set_pd(0, 0, 0, 0);
             // total_values = _mm256_set_pd(0, 0, 0, 0);
-            total_weights = _mm256_loadu_pd(&weightsArray[k]);
-            total_values = _mm256_loadu_pd(&fitnessArray[k]);
+            
+            __m256d total_weights = _mm256_loadu_pd(&weightsArray[k]);
+            __m256d total_values = _mm256_loadu_pd(&fitnessArray[k]);
 
-            i_1 = _mm256_loadu_pd(&representation[(id*offset)+k]);
-            i_2 = _mm256_loadu_pd(&representation[(id+1)*offset+k]);
-            i_3 = _mm256_loadu_pd(&representation[(id+2)*offset+k]);
-            i_4 = _mm256_loadu_pd(&representation[(id+3)*offset+k]);
+            __m256d i_1 = _mm256_loadu_pd(&representation[(id*offset)+k]);
+            __m256d i_2 = _mm256_loadu_pd(&representation[(id+1)*offset+k]);
+            __m256d i_3 = _mm256_loadu_pd(&representation[(id+2)*offset+k]);
+            __m256d i_4 = _mm256_loadu_pd(&representation[(id+3)*offset+k]);
 
 
             total_weights = _mm256_fmadd_pd(i_1, weight_1, total_weights);
@@ -124,14 +122,15 @@ double *fitness(double *weights, double *values_d, double *representation)
     }
 
     for(int i=0; i<SIZE_OF_INITIAL_POPULATION; i+=4){
-        total_weights = _mm256_loadu_pd(&weightsArray[i]);
-        total_values = _mm256_loadu_pd(&fitnessArray[i]);
-        __m256d ret_cmp = _mm256_cmp_pd(total_weights, max_knapsack_weight, 2);
-        total_values = _mm256_and_pd(ret_cmp, total_values);
-        _mm256_storeu_pd(&fitnessArray[i], total_values);
+        total_weights1 = _mm256_loadu_pd(&weightsArray[i]);
+        total_values1 = _mm256_loadu_pd(&fitnessArray[i]);
+        __m256d ret_cmp = _mm256_cmp_pd(total_weights1, max_knapsack_weight, 2);
+        total_values1 = _mm256_and_pd(ret_cmp, total_values1);
+        _mm256_storeu_pd(&fitnessArray[i], total_values1);
     }
     return fitnessArray;
 }
+
 
 double *selection(double *weights, double *values, double *initial_population)
 {   
