@@ -19,7 +19,7 @@ int main(){
   int NUMBER_OF_ITEMS = 128;
   int skip_index = 8;
   int NUMBER_OF_GENERATIONS = 100000;
-  double *population, *selection_pop;
+  double *population; 
   double *random, *cmp;
   double *contenders, *winners;
   double *fitnessArray, *weightsArray, *weights, *values; 
@@ -27,13 +27,12 @@ int main(){
 
 
   posix_memalign((void*) &population, 64, POPULATION_SIZE * NUMBER_OF_ITEMS * sizeof(double));
-  posix_memalign((void*) &selection_pop, 64, (POPULATION_SIZE / 2) * NUMBER_OF_ITEMS * sizeof(double));
   posix_memalign((void*) &random, 64, POPULATION_SIZE * sizeof(double));
-  posix_memalign((void*) &contenders, 64, POPULATION_SIZE * sizeof(double)); 
-  posix_memalign((void*) &winners, 64, POPULATION_SIZE * sizeof(double));
+  posix_memalign((void*) &contenders, 64, POPULATION_SIZE * NUMBER_OF_ITEMS* sizeof(double)); 
+  posix_memalign((void*) &winners, 64, POPULATION_SIZE/2 * NUMBER_OF_ITEMS *sizeof(double));
   posix_memalign((void*) &cmp, 64, 4 * sizeof(double));
-  posix_memalign((void*) &fitnessArray, 64, POPULATION_SIZE * sizeof(double));
-  posix_memalign((void*) &weightsArray, 64, POPULATION_SIZE * sizeof(double));
+  posix_memalign((void*) &fitnessArray, 64, POPULATION_SIZE * NUMBER_OF_ITEMS * sizeof(double));
+  posix_memalign((void*) &weightsArray, 64, POPULATION_SIZE * NUMBER_OF_ITEMS * sizeof(double));
   posix_memalign((void*) &values, 64, NUMBER_OF_ITEMS * sizeof(double));
   posix_memalign((void*) &weights, 64, NUMBER_OF_ITEMS * sizeof(double));
 
@@ -56,18 +55,13 @@ int main(){
     printf("POP_SIZE %d", POPULATION_SIZE * NUMBER_OF_ITEMS);
     for (int i = 0; i < POPULATION_SIZE * NUMBER_OF_ITEMS; i++){
       if ( i == 0) {
-
-        // printf("k limit %d ", NUMBER_OF_ITEMS*skip_index);
         for(int k =0; k < NUMBER_OF_ITEMS; k++) {
-          // printf(" k %d", k);
           fscanf(fp, "%s", &buff);
         }
         rep_fit = 0;
         printf("\n");
       } else if ( (i )% NUMBER_OF_ITEMS == 0) {
-        printf("k limit %d ", NUMBER_OF_ITEMS*skip_index);
         for(int k =0; k < NUMBER_OF_ITEMS*skip_index; k++) {
-          // printf(" k %d", k);
           fscanf(fp, "%s", &buff);
         }
         printf("\t Fitness val : %.2f \n", (rep_fit));
@@ -80,48 +74,48 @@ int main(){
         rep_fit += weights[i%NUMBER_OF_ITEMS];
       }
    }
-  
     rep_fit = 0;
-    selection_pop = selection(weights, values, population, contenders, winners, fitnessArray, weightsArray, NUMBER_OF_ITEMS, POPULATION_SIZE, MAX_KNAPSACK_WEIGHT);
-  // printf("\nFIRST SELECTION:\n");
-  // for (int i = 0; i < NUMBER_OF_ITEMS * POPULATION_SIZE; i++){
-  //       printf(" %.2f ",selection_pop[i]);
-  //       if (selection_pop[i] == 1.0) {
-  //         rep_fit += weights[i%NUMBER_OF_ITEMS];
+    selection(weights, values, population, contenders, winners, fitnessArray, weightsArray, NUMBER_OF_ITEMS, POPULATION_SIZE, MAX_KNAPSACK_WEIGHT);
+    printf("\nFIRST SELECTION: %d\n", NUMBER_OF_ITEMS * POPULATION_SIZE/2);
+    for (int i = 0; i < (POPULATION_SIZE / 2) * NUMBER_OF_ITEMS; i++){
+          printf(" %.2f ", winners[i]);
           
-  //       }
-  //       if ((i+1) %NUMBER_OF_ITEMS ==0) {
-  //         printf("\t Fitness: %.2f \n",rep_fit);
-  //         rep_fit = 0;
-  //       }
-        
-  // } 
-//   // for (int i = 0; i < POPULATION_SIZE; i++){
-//   //   random[i] = (rand() % (128 - 0))/128.00;
-//   // }
-//   // for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
-//   //   crossover(population, POPULATION_SIZE, 0.25, random, cmp );
-//   //   mutation(population, 0.15, random, POPULATION_SIZE );
-//   // }
-//   // printf("\nFINAL GENERATION:\n");
-//   // for (int i = 0; i < POPULATION_SIZE * NUMBER_OF_ITEMS; i++){
-//   //       printf(" %.2f ",population[i]);
-//   //       if ((i+1) %NUMBER_OF_ITEMS ==0) {
-//   //         printf("\n");
-//   //       }
-//   // } 
+          if (winners[i] == 1.0) {
+            rep_fit += weights[i%NUMBER_OF_ITEMS];
+            
+          }
+          if ((i+1) %NUMBER_OF_ITEMS ==0) {
+            printf("\t Fitness: %.2f \n",rep_fit);
+            rep_fit = 0;
+          }
+          
+    } 
+    for (int i = 0; i < POPULATION_SIZE; i++){
+      random[i] = (rand() % (128 - 0))/128.00;
+    }
+    for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
+      selection(weights, values, population, contenders, winners, fitnessArray, weightsArray, NUMBER_OF_ITEMS, POPULATION_SIZE, MAX_KNAPSACK_WEIGHT);
+      crossover(population, POPULATION_SIZE, 0.25, random, cmp );
+      mutation(population, 0.15, random, POPULATION_SIZE );
+    }
+    printf("\nFINAL GENERATION:\n");
+    for (int i = 0; i < POPULATION_SIZE * NUMBER_OF_ITEMS; i++){
+          printf(" %.2f ",population[i]);
+          if ((i+1) %NUMBER_OF_ITEMS ==0) {
+            printf("\n");
+          }
+    } 
 
   
   free(population);
-  free(selection_pop);
-  free(random);
-  free(cmp);
-  free(contenders);
-  free(winners);
   free(fitnessArray);
   free(weightsArray);
   free(weights);
   free(values);
+  free(contenders);
+  free(random);
+  free(cmp);
+  free(winners);
   return 0;
 
 }

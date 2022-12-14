@@ -1,9 +1,9 @@
 #include "immintrin.h"
 #include"omp.h"
-// #define NUMBER_OF_ITEMS 12
-#define MAX_KNAPSACK_WEIGHT 15
-#define SIZE_OF_INITIAL_POPULATION 512
-#define ITEM_SIZE 128
+// // #define NUMBER_OF_ITEMS 12
+// #define MAX_KNAPSACK_WEIGHT 15
+// #define SIZE_OF_INITIAL_POPULATION 512
+// #define ITEM_SIZE 128
 
 
 double* convertColMajor(double * matrix, int rowNum, int colNum, double *res){
@@ -47,29 +47,33 @@ double *fitness(double *weights, double *values_d, double *representation, doubl
     int offset = popSize;
 
     // representation = convertColMajor(representation, popSize, item_size);
-    
+    __m256d weight_1, weight_2, weight_3, weight_4;
+    __m256d values_1, values_2, values_3, values_4;
+    __m256d total_values,total_weights;
+    __m256d i_1, i_2, i_3, i_4;
+
     #pragma omp parallel for num_threads(20)
-    for(int id = 0; id < item_size; id += 4){
+    for(int id = 0; id < ITEM_SIZE; id += 4){
 
-        __m256d weight_1 = _mm256_broadcast_sd(&weights[id]);
-        __m256d weight_2 = _mm256_broadcast_sd(&weights[id+1]);
-        __m256d weight_3 = _mm256_broadcast_sd(&weights[id+2]);
-        __m256d weight_4 = _mm256_broadcast_sd(&weights[id+3]);
+        weight_1 = _mm256_broadcast_sd(&weights[id]);
+        weight_2 = _mm256_broadcast_sd(&weights[id+1]);
+        weight_3 = _mm256_broadcast_sd(&weights[id+2]);
+        weight_4 = _mm256_broadcast_sd(&weights[id+3]);
 
-        __m256d values_1 = _mm256_broadcast_sd(&values_d[id]);
-        __m256d values_2 = _mm256_broadcast_sd(&values_d[id+1]);
-        __m256d values_3 = _mm256_broadcast_sd(&values_d[id+2]);
-        __m256d values_4 = _mm256_broadcast_sd(&values_d[id+3]);
+        values_1 = _mm256_broadcast_sd(&values_d[id]);
+        values_2 = _mm256_broadcast_sd(&values_d[id+1]);
+        values_3 = _mm256_broadcast_sd(&values_d[id+2]);
+        values_4 = _mm256_broadcast_sd(&values_d[id+3]);
 
         for(int k = 0; k < popSize; k += 4){
 
-            __m256d total_weights = _mm256_loadu_pd(&weightsArray[k]);
-            __m256d total_values = _mm256_loadu_pd(&fitnessArray[k]);
+            total_weights = _mm256_loadu_pd(&weightsArray[k]);
+            total_values = _mm256_loadu_pd(&fitnessArray[k]);
 
-            __m256d i_1 = _mm256_loadu_pd(&representation[(id*offset)+k]);
-            __m256d i_2 = _mm256_loadu_pd(&representation[(id+1)*offset+k]);
-            __m256d i_3 = _mm256_loadu_pd(&representation[(id+2)*offset+k]);
-            __m256d i_4 = _mm256_loadu_pd(&representation[(id+3)*offset+k]);
+            i_1 = _mm256_loadu_pd(&representation[(id*offset)+k]);
+            i_2 = _mm256_loadu_pd(&representation[(id+1)*offset+k]);
+            i_3 = _mm256_loadu_pd(&representation[(id+2)*offset+k]);
+            i_4 = _mm256_loadu_pd(&representation[(id+3)*offset+k]);
 
             total_weights = _mm256_fmadd_pd(i_1, weight_1, total_weights);
             total_weights = _mm256_fmadd_pd(i_2, weight_2, total_weights);
@@ -86,10 +90,11 @@ double *fitness(double *weights, double *values_d, double *representation, doubl
         }
     }
 
+    __m256d tmp,total;
     #pragma omp parallel for num_threads(20)
     for(int i=0; i<popSize; i+=4){
-        __m256d tmp = _mm256_broadcast_sd(&val);
-        __m256d total = _mm256_loadu_pd(&weightsArray[i]);
+        tmp = _mm256_broadcast_sd(&val);
+        total = _mm256_loadu_pd(&weightsArray[i]);
         tmp = _mm256_cmp_pd(total, tmp, 2);
         total = _mm256_loadu_pd(&fitnessArray[i]);
         total = _mm256_and_pd(tmp, total);
@@ -108,7 +113,7 @@ double *selection(double *weights, double *values, double *initial_population,do
     __m256d compare;
     contenders = fitness(weights, values, initial_population, fitnessArray, weightsArray, popSize, ITEM_SIZE, MAX_KNAPSACK_WEIGHT);
     int f = 0;
-    #pragma omp parallel for num_threads(4)
+    #pragma omp parallel for num_threads(20)
     for (int i = 0; i < popSize; i+=4*2) {
         contenders_set_0 = _mm256_loadu_pd(&contenders[i]);     
         contenders_set_1 = _mm256_loadu_pd(&contenders[i + 4]);
@@ -209,7 +214,7 @@ double *mutation(double *representation, double MUTATION_RATE, double *random_va
     __m256d RANDOM, compare, i1_1, i1_2, i1_3, i1_4, i1_5, i1_6, i1_7, i1_8, i1_9, i1_10, i1_11, i1_12;
     
     __m256d MUTATION_RATE_ =  _mm256_broadcast_sd(&mr);
-    #pragma omp parallel for num_threads(4)
+    #pragma omp parallel for num_threads(20)
     for (int i =0; i< popSize; i+=4 ) {
 
         RANDOM = _mm256_loadu_pd(&random_vals[i]); 

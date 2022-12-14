@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -mavx -mfma -O3 -std=c99
+CFLAGS = -mavx -mfma -O3 -std=c99 -fopenmp
 
 default: all assemble
 
