@@ -1,16 +1,8 @@
 #include "immintrin.h"
 #include"omp.h"
-// // #define NUMBER_OF_ITEMS 12
-// #define MAX_KNAPSACK_WEIGHT 15
-// #define SIZE_OF_INITIAL_POPULATION 512
-// #define ITEM_SIZE 128
-
 
 double* convertColMajor(double * matrix, int rowNum, int colNum, double *res){
-    // // [256][12]
-    // double* res;
-    // posix_memalign((void*) &res, 64, rowNum * colNum * sizeof(double));
-    
+
     for(int j=0; j < colNum; j++){
         for(int i=0;i < rowNum; i++){
             res[rowNum*j+i] = matrix[i*colNum +j];
@@ -334,8 +326,7 @@ void crossover_and_mutation(double* representation, int popSize, double crossove
             _mm256_storeu_pd(&representation[(i+4)*12+4], tmp_1);
 
             tmp_2 = _mm256_permute2f128_pd(p_21, p_11, 0|(3<<4));
-            tmp_2 = _mm256_xor_pd(compare_mutation, tmp_1);  //mutation
-            // second child
+            tmp_2 = _mm256_xor_pd(compare_mutation, tmp_1);  
             _mm256_storeu_pd(&representation[(i+5)*12+4], tmp_2);
         }
 
@@ -345,15 +336,12 @@ void crossover_and_mutation(double* representation, int popSize, double crossove
 
             tmp_1 = _mm256_permute2f128_pd(p_11, p_21, 0|(3<<4)); //crossover
             tmp_1 = _mm256_xor_pd(compare_mutation, tmp_1);  //mutation
-            // first child
             _mm256_storeu_pd(&representation[(i+6)*12+4], tmp_1);
 
             tmp_2 = _mm256_permute2f128_pd(p_21, p_11, 0|(3<<4));
             tmp_2 = _mm256_xor_pd(compare_mutation, tmp_1);  //mutation
-            // second child
             _mm256_storeu_pd(&representation[(i+7)*12+4], tmp_2);
         }
-    // }
     }
 
 
