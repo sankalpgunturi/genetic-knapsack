@@ -197,7 +197,6 @@ void crossover(double* representation, int popSize, double crossover_rate, doubl
         j+=4;
     }
 
-
 }
 
 double *mutation(double *representation, double MUTATION_RATE, double *random_vals, int popSize)

@@ -14,18 +14,28 @@ static __inline__ unsigned long long rdtsc(void) {
 }
 
 int main(){
-  double *population, *selection_pop;
-  double *random, *cmp;
+  
   int POPULATION_SIZE = 256*2;
   int NUMBER_OF_ITEMS = 12;
+  int skip_index = 10;
   int NUMBER_OF_GENERATIONS = 100000;
+  double *population, *selection_pop;
+  double *random, *cmp;
+  double *contenders, *winners;
+  double* fitnessArray, *weightsArray; 
+
+
+
   posix_memalign((void*) &population, 64, POPULATION_SIZE * 12 * sizeof(double));
   posix_memalign((void*) &selection_pop, 64, (POPULATION_SIZE / 2) * 12 * sizeof(double));
   posix_memalign((void*) &random, 64, POPULATION_SIZE * sizeof(double));
+  posix_memalign((void*) &contenders, 64, POPULATION_SIZE * sizeof(double)); 
+  posix_memalign((void*) &winners, 64, POPULATION_SIZE * sizeof(double));
   posix_memalign((void*) &cmp, 64, 4 * sizeof(double));
-  srand(time(NULL));
+  posix_memalign((void*) &fitnessArray, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double));
+  posix_memalign((void*) &weightsArray, 64, SIZE_OF_INITIAL_POPULATION * sizeof(double));
+
   
-  int skip_index = 15;
   FILE *fp = fopen("POPULATION_4096.txt", "r");
 
   if (fp == NULL){
