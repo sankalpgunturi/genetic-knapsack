@@ -154,7 +154,7 @@ void crossover(double* representation, int popSize, double crossover_rate, doubl
     __m256d compare = _mm256_cmp_pd(CROSS_RATE, RANDOM, 14);
     _mm256_storeu_pd(&cmp[0], compare);
     __m256d tmp_1, tmp_2, p_11, p_21;
-    #pragma omp parallel for num_threads(4)
+    #pragma omp parallel for num_threads(20)
     for(int i=0; i<popSize; i+=8){
 
         if(cmp[0] != 0){

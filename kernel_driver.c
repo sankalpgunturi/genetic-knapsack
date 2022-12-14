@@ -13,12 +13,15 @@ static __inline__ unsigned long long rdtsc(void) {
   return ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 );
 }
 
-int main(){
-  
-  int POPULATION_SIZE = 1024;
+int main(int argc, char** argv){
+  int POPULATION_SIZE = atoi(argv[1]);
   int NUMBER_OF_ITEMS = 128;
-  int skip_index = 8;
-  int NUMBER_OF_GENERATIONS = 100000;
+  int NUMBER_OF_GENERATIONS = atoi(argv[2]);
+
+  int skip_index=8;
+  if (argc > 3){
+    skip_index = atoi(argv[3]);
+  }  
   double *population; 
   double *random, *cmp;
   double *contenders, *winners;
