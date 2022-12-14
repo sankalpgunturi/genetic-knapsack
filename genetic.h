@@ -40,29 +40,27 @@ double* convertColMajorSIMD(double* matrix, int rowNum, int colNum, double* res,
    return res;
 }
 
-double *fitness(double *weights, double *values_d, double *representation, double* fitnessArray, double* weightsArray, int popSize, int ITEM_SIZE)
+
+double *fitness(double *weights, double *values_d, double *representation, double* fitnessArray, double* weightsArray, int popSize, int item_size)
 {   
 
     double val = MAX_KNAPSACK_WEIGHT; 
     int offset = popSize;
 
-    __m256d max_knapsack_weight = _mm256_broadcast_sd(&val);
-    __m256d weight_1, weight_2, weight_3, weight_4;
-    __m256d values_1, values_2, values_3, values_4;
-    __m256d total_weights1, total_values1;
+    // representation = convertColMajor(representation, popSize, item_size);
+    
+    #pragma omp parallel for num_threads(20)
+    for(int id = 0; id < item_size; id += 4){
 
-    #pragma omp parallel for num_threads(4)
-    for(int id = 0; id < ITEM_SIZE; id += 4){
+        __m256d weight_1 = _mm256_broadcast_sd(&weights[id]);
+        __m256d weight_2 = _mm256_broadcast_sd(&weights[id+1]);
+        __m256d weight_3 = _mm256_broadcast_sd(&weights[id+2]);
+        __m256d weight_4 = _mm256_broadcast_sd(&weights[id+3]);
 
-        weight_1 = _mm256_broadcast_sd(&weights[id]);
-        weight_2 = _mm256_broadcast_sd(&weights[id+1]);
-        weight_3 = _mm256_broadcast_sd(&weights[id+2]);
-        weight_4 = _mm256_broadcast_sd(&weights[id+3]);
-
-        values_1 = _mm256_broadcast_sd(&values_d[id]);
-        values_2 = _mm256_broadcast_sd(&values_d[id+1]);
-        values_3 = _mm256_broadcast_sd(&values_d[id+2]);
-        values_4 = _mm256_broadcast_sd(&values_d[id+3]);
+        __m256d values_1 = _mm256_broadcast_sd(&values_d[id]);
+        __m256d values_2 = _mm256_broadcast_sd(&values_d[id+1]);
+        __m256d values_3 = _mm256_broadcast_sd(&values_d[id+2]);
+        __m256d values_4 = _mm256_broadcast_sd(&values_d[id+3]);
 
         for(int k = 0; k < popSize; k += 4){
 
@@ -73,7 +71,6 @@ double *fitness(double *weights, double *values_d, double *representation, doubl
             __m256d i_2 = _mm256_loadu_pd(&representation[(id+1)*offset+k]);
             __m256d i_3 = _mm256_loadu_pd(&representation[(id+2)*offset+k]);
             __m256d i_4 = _mm256_loadu_pd(&representation[(id+3)*offset+k]);
-
 
             total_weights = _mm256_fmadd_pd(i_1, weight_1, total_weights);
             total_weights = _mm256_fmadd_pd(i_2, weight_2, total_weights);
@@ -87,16 +84,19 @@ double *fitness(double *weights, double *values_d, double *representation, doubl
 
             _mm256_storeu_pd(&fitnessArray[k], total_weights);
             _mm256_storeu_pd(&fitnessArray[k], total_values);
-         }
+        }
     }
 
+    #pragma omp parallel for num_threads(20)
     for(int i=0; i<popSize; i+=4){
-        total_weights1 = _mm256_loadu_pd(&weightsArray[i]);
-        total_values1 = _mm256_loadu_pd(&fitnessArray[i]);
-        __m256d ret_cmp = _mm256_cmp_pd(total_weights1, max_knapsack_weight, 2);
-        total_values1 = _mm256_and_pd(ret_cmp, total_values1);
-        _mm256_storeu_pd(&fitnessArray[i], total_values1);
+        __m256d tmp = _mm256_broadcast_sd(&val);
+        __m256d total = _mm256_loadu_pd(&weightsArray[i]);
+        tmp = _mm256_cmp_pd(total, tmp, 2);
+        total = _mm256_loadu_pd(&fitnessArray[i]);
+        total = _mm256_and_pd(tmp, total);
+        _mm256_storeu_pd(&fitnessArray[i], total);
     }
+
     return fitnessArray;
 }
 
