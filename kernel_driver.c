@@ -55,24 +55,24 @@ int main(int argc, char** argv){
 
     char buff[1]; 
     double rep_fit = 0;
-    printf("POP_SIZE %d", POPULATION_SIZE * NUMBER_OF_ITEMS);
+    // printf("POP_SIZE %d", POPULATION_SIZE * NUMBER_OF_ITEMS);
     for (int i = 0; i < POPULATION_SIZE * NUMBER_OF_ITEMS; i++){
       if ( i == 0) {
         for(int k =0; k < NUMBER_OF_ITEMS; k++) {
           fscanf(fp, "%s", &buff);
         }
         rep_fit = 0;
-        printf("\n");
+        // printf("\n");
       } else if ( (i )% NUMBER_OF_ITEMS == 0) {
         for(int k =0; k < NUMBER_OF_ITEMS*skip_index; k++) {
           fscanf(fp, "%s", &buff);
         }
-        printf("\t Fitness val : %.2f \n", (rep_fit));
+        // printf("\t Fitness val : %.2f \n", (rep_fit));
         rep_fit = 0;
       } 
       fscanf(fp, "%s", &buff);
       population[i] = buff[0] - 48.0;
-      printf(" %.2f ", population[i]);
+      // printf(" %.2f ", population[i]);
       if (population[i] == 1.0) {
         rep_fit += weights[i%NUMBER_OF_ITEMS];
       }
@@ -123,7 +123,7 @@ int main(int argc, char** argv){
 
     t1 = rdtsc();
 
-    printf("Total time \t\t\t\t: %.2f \n", (double) (t1-t0));
+    printf("\nTotal time \t\t\t\t\t: %.2f \n", (double) (t1-t0));
     printf("Total Selection time \t\t\t\t: %.2f \n", (double) (selection_total));
     printf("Total Crossover time \t\t\t\t: %.2f \n", (double) (crossover_total));
     printf("Total Mutation time \t\t\t\t: %.2f \n", (double) (mutation_total));
