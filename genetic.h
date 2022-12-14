@@ -83,7 +83,7 @@ double *fitness(double *weights, double *values_d, double *representation, doubl
     }
 
     __m256d tmp,total;
-    #pragma omp parallel for num_threads(20)
+    // #pragma omp parallel for num_threads(20)
     for(int i=0; i<popSize; i+=4){
         tmp = _mm256_broadcast_sd(&val);
         total = _mm256_loadu_pd(&weightsArray[i]);
