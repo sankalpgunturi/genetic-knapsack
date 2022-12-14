@@ -40,7 +40,7 @@ double* convertColMajorSIMD(double* matrix, int rowNum, int colNum, double* res,
    return res;
 }
 
-double *fitness(double *weights, double *values_d, double *representation, double* fitnessArray, double* weightsArray, int popSize, int ITEM_SIZE)
+double *fitness(double *weights, double *values_d, double *representation, double* fitnessArray, double* weightsArray, int popSize, int ITEM_SIZE, double MAX_KNAPSACK_WEIGHT)
 {   
 
     double val = MAX_KNAPSACK_WEIGHT; 
@@ -101,14 +101,15 @@ double *fitness(double *weights, double *values_d, double *representation, doubl
 }
 
 
-double *selection(double *weights, double *values, double *initial_population,double* contenders, double* winners, int popSize)
+double *selection(double *weights, double *values, double *initial_population,double* contenders, double* winners, double *fitnessArray, double *weightsArray, int ITEM_SIZE, int popSize,int MAX_KNAPSACK_WEIGHT)
 {   
     __m256d contenders_set_0 , contenders_set_1;
     __m256d rep_0_1, rep_0_2, rep_0_3, rep_1_1, rep_1_2, rep_1_3;
     __m256d winner_0, winner_1, winner_2;
     __m256d compare;
-    contenders = fitness(weights, values, initial_population);
+    contenders = fitness(weights, values, initial_population, fitnessArray, weightsArray, popSize, ITEM_SIZE, MAX_KNAPSACK_WEIGHT);
     int f = 0;
+    #pragma omp parallel for num_threads(4)
     for (int i = 0; i < popSize; i+=4*2) {
         contenders_set_0 = _mm256_loadu_pd(&contenders[i]);     
         contenders_set_1 = _mm256_loadu_pd(&contenders[i + 4]);
@@ -149,6 +150,7 @@ void crossover(double* representation, int popSize, double crossover_rate, doubl
     __m256d compare = _mm256_cmp_pd(CROSS_RATE, RANDOM, 14);
     _mm256_storeu_pd(&cmp[0], compare);
     __m256d tmp_1, tmp_2, p_11, p_21;
+    #pragma omp parallel for num_threads(4)
     for(int i=0; i<popSize; i+=8){
 
         if(cmp[0] != 0){
@@ -208,6 +210,7 @@ double *mutation(double *representation, double MUTATION_RATE, double *random_va
     __m256d RANDOM, compare, i1_1, i1_2, i1_3, i1_4, i1_5, i1_6, i1_7, i1_8, i1_9, i1_10, i1_11, i1_12;
     
     __m256d MUTATION_RATE_ =  _mm256_broadcast_sd(&mr);
+    #pragma omp parallel for num_threads(4)
     for (int i =0; i< popSize; i+=4 ) {
 
         RANDOM = _mm256_loadu_pd(&random_vals[i]); 
@@ -266,7 +269,7 @@ double *mutation(double *representation, double MUTATION_RATE, double *random_va
     }
 }
 
-
+//FOLLOWING IS INCOMPLETE
 void crossover_and_mutation(double* representation, int popSize, double crossover_rate, double *random, double *cmp, double MUTATION_RATE)
 {
     double const mr = MUTATION_RATE;
