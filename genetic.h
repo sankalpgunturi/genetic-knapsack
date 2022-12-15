@@ -44,7 +44,7 @@ double *fitness(double *weights, double *values_d, double *representation, doubl
     __m256d total_values,total_weights;
     __m256d i_1, i_2, i_3, i_4;
 
-    #pragma omp parallel for num_threads(20)
+    // #pragma omp parallel for num_threads(8)
     for(int id = 0; id < ITEM_SIZE; id += 4){
 
         weight_1 = _mm256_broadcast_sd(&weights[id]);
@@ -83,7 +83,7 @@ double *fitness(double *weights, double *values_d, double *representation, doubl
     }
 
     __m256d tmp,total;
-    // #pragma omp parallel for num_threads(20)
+    // // #pragma omp parallel for num_threads(8)
     for(int i=0; i<popSize; i+=4){
         tmp = _mm256_broadcast_sd(&val);
         total = _mm256_loadu_pd(&weightsArray[i]);
@@ -105,7 +105,7 @@ double *selection(double *weights, double *values, double *initial_population,do
     __m256d compare;
     contenders = fitness(weights, values, initial_population, fitnessArray, weightsArray, popSize, ITEM_SIZE, MAX_KNAPSACK_WEIGHT);
     int f = 0;
-    #pragma omp parallel for num_threads(20)
+    // #pragma omp parallel for num_threads(8)
     for (int i = 0; i < popSize; i+=4*2) {
         contenders_set_0 = _mm256_loadu_pd(&contenders[i]);     
         contenders_set_1 = _mm256_loadu_pd(&contenders[i + 4]);
@@ -146,7 +146,7 @@ void crossover(double* representation, int popSize, double crossover_rate, doubl
     __m256d compare = _mm256_cmp_pd(CROSS_RATE, RANDOM, 14);
     _mm256_storeu_pd(&cmp[0], compare);
     __m256d tmp_1, tmp_2, p_11, p_21;
-    #pragma omp parallel for num_threads(20)
+    // #pragma omp parallel for num_threads(8)
     for(int i=0; i<popSize; i+=8){
 
         if(cmp[0] != 0){
@@ -203,11 +203,11 @@ double *mutation(double *representation, double MUTATION_RATE, double *random_va
     double const mr = MUTATION_RATE;
     double const one = 1;
     __m256d ONES = _mm256_broadcast_sd(&one);
-    __m256d RANDOM, compare, i1_1, i1_2, i1_3, i1_4, i1_5, i1_6, i1_7, i1_8, i1_9, i1_10, i1_11, i1_12;
+    __m256d RANDOM, compare, i1_1, i1_2, i1_3, i1_4, i1_5, i1_6, i1_7, i1_8, i1_9; 
     
     __m256d MUTATION_RATE_ =  _mm256_broadcast_sd(&mr);
-    #pragma omp parallel for num_threads(20)
-    for (int i =0; i< popSize; i+=4 ) {
+    //#pragma omp parallel for num_threads(8)
+    for (int i =0; i< popSize; i+=3 ) {
 
         RANDOM = _mm256_loadu_pd(&random_vals[i]); 
         compare = _mm256_cmp_pd(RANDOM, MUTATION_RATE_, 2);
@@ -234,15 +234,12 @@ double *mutation(double *representation, double MUTATION_RATE, double *random_va
         i1_4 = _mm256_xor_pd(compare, i1_4); 
         _mm256_storeu_pd(&representation[i+12], i1_4);
 
-        i1_10 = _mm256_loadu_pd(&representation[i+36]);
         i1_5 = _mm256_xor_pd(compare, i1_5);
         _mm256_storeu_pd(&representation[i+16], i1_5);
 
-        i1_11 = _mm256_loadu_pd(&representation[i+40]);
         i1_6 = _mm256_xor_pd(compare, i1_6);
         _mm256_storeu_pd(&representation[i+20], i1_6);
 
-        i1_12 = _mm256_loadu_pd(&representation[i+44]);
         i1_7 = _mm256_xor_pd(compare, i1_7); 
         _mm256_storeu_pd(&representation[i+24], i1_7);
 
@@ -251,16 +248,6 @@ double *mutation(double *representation, double MUTATION_RATE, double *random_va
 
         i1_9 = _mm256_xor_pd(compare, i1_9);
         _mm256_storeu_pd(&representation[i+32], i1_9);
-
-        i1_10 = _mm256_xor_pd(compare, i1_10);
-        _mm256_storeu_pd(&representation[i+36], i1_10);
-
-        i1_11 = _mm256_xor_pd(compare, i1_11);
-        _mm256_storeu_pd(&representation[i+40], i1_11);
-
-        i1_12 = _mm256_xor_pd(compare, i1_12);
-        _mm256_storeu_pd(&representation[i+44], i1_12);
-
 
     }
 }
