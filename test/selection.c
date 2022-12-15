@@ -6,8 +6,8 @@
 #include <time.h>
 #include <math.h>
 #include"omp.h"
-#define ITEM_SIZE 32768
-#define SIZE_OF_INITIAL_POPULATION 32768
+#define ITEM_SIZE 2048
+#define SIZE_OF_INITIAL_POPULATION 8192
 #define MAX_KNAPSACK_WEIGHT 50.0
 
 
@@ -21,7 +21,7 @@ static __inline__ unsigned long long rdtsc(void) {
 
 double* convertColMajor(double * matrix, int rowNum, int colNum){
 // [256][12]
-    double* res = (double *)malloc((rowNum * colNum) *sizeof(double));;
+    double* res = (double *)malloc((rowNum * colNum) * sizeof(double));;
     posix_memalign((void*) &res, 64, rowNum * colNum * sizeof(double));
     #pragma omp parallel for num_threads(20)
     for(int j=0; j < colNum; j++){
