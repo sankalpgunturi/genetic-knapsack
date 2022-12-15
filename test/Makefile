@@ -8,11 +8,12 @@ default: all assemble
 all: crossover
 
 crossover:
-	$(CC) $(CC_FLAGS) -o crossover.x crossover.c
-	$(CC) $(CC_FLAGS) -o selection.x selection.c
+	$(CC) $(CC_FLAGS) -fopenmp -o crossover.x crossover.c
+	$(CC) $(CC_FLAGS) -fopenmp -o selection.x selection.c
 
 assemble:
 	objdump -s -d -f --source ./selection.x > selection.S
+	objdump -s -d -f --source ./crossover.x > crossover.S
 
 clean:
 	rm -rf *.x *.S
