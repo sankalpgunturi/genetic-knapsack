@@ -55,59 +55,92 @@ int main(int argc, char** argv){
 
     char buff[1]; 
     double rep_fit = 0;
-    printf("POP_SIZE %d", POPULATION_SIZE * NUMBER_OF_ITEMS);
+    // printf("POP_SIZE %d", POPULATION_SIZE * NUMBER_OF_ITEMS);
     for (int i = 0; i < POPULATION_SIZE * NUMBER_OF_ITEMS; i++){
       if ( i == 0) {
         for(int k =0; k < NUMBER_OF_ITEMS; k++) {
           fscanf(fp, "%s", &buff);
         }
         rep_fit = 0;
-        printf("\n");
+        // printf("\n");
       } else if ( (i )% NUMBER_OF_ITEMS == 0) {
         for(int k =0; k < NUMBER_OF_ITEMS*skip_index; k++) {
           fscanf(fp, "%s", &buff);
         }
-        printf("\t Fitness val : %.2f \n", (rep_fit));
+        // printf("\t Fitness val : %.2f \n", (rep_fit));
         rep_fit = 0;
       } 
       fscanf(fp, "%s", &buff);
       population[i] = buff[0] - 48.0;
-      printf(" %.2f ", population[i]);
+      // printf(" %.2f ", population[i]);
       if (population[i] == 1.0) {
         rep_fit += weights[i%NUMBER_OF_ITEMS];
       }
    }
     rep_fit = 0;
-    selection(weights, values, population, contenders, winners, fitnessArray, weightsArray, NUMBER_OF_ITEMS, POPULATION_SIZE, MAX_KNAPSACK_WEIGHT);
-    printf("\nFIRST SELECTION: %d\n", NUMBER_OF_ITEMS * POPULATION_SIZE/2);
-    for (int i = 0; i < (POPULATION_SIZE / 2) * NUMBER_OF_ITEMS; i++){
-          printf(" %.2f ", winners[i]);
+    // selection(weights, values, population, contenders, winners, fitnessArray, weightsArray, NUMBER_OF_ITEMS, POPULATION_SIZE, MAX_KNAPSACK_WEIGHT);
+    // printf("\nFIRST SELECTION: %d\n", NUMBER_OF_ITEMS * POPULATION_SIZE/2);
+    // for (int i = 0; i < (POPULATION_SIZE / 2) * NUMBER_OF_ITEMS; i++){
+    //       printf(" %.2f ", winners[i]);
           
-          if (winners[i] == 1.0) {
-            rep_fit += weights[i%NUMBER_OF_ITEMS];
+    //       if (winners[i] == 1.0) {
+    //         rep_fit += weights[i%NUMBER_OF_ITEMS];
             
-          }
-          if ((i+1) %NUMBER_OF_ITEMS ==0) {
-            printf("\t Fitness: %.2f \n",rep_fit);
-            rep_fit = 0;
-          }
+    //       }
+    //       if ((i+1) %NUMBER_OF_ITEMS ==0) {
+    //         printf("\t Fitness: %.2f \n",rep_fit);
+    //         rep_fit = 0;
+    //       }
           
-    } 
+    // } 
+
     for (int i = 0; i < POPULATION_SIZE; i++){
       random[i] = (rand() % (128 - 0))/128.00;
     }
+
+
+    unsigned long long t0, t1;
+    unsigned long long selection_t0, selection_total;
+    unsigned long long crossover_t0, crossover_total;
+    unsigned long long mutation_t0, mutation_total;
+    //KERNELS 
+    selection_total = 0;
+    t0 = rdtsc();
     for(int g = 0; g < NUMBER_OF_GENERATIONS; g++ ) {
+
+      selection_t0 = rdtsc();
       selection(weights, values, population, contenders, winners, fitnessArray, weightsArray, NUMBER_OF_ITEMS, POPULATION_SIZE, MAX_KNAPSACK_WEIGHT);
+      selection_total += rdtsc() - selection_t0 ;
+
+      crossover_t0 = rdtsc();
       crossover(population, POPULATION_SIZE, 0.25, random, cmp );
+      crossover_total += rdtsc() - crossover_t0;
+
+      mutation_t0 = rdtsc();
       mutation(population, 0.15, random, POPULATION_SIZE );
+      mutation_total += rdtsc() - mutation_t0;
     }
-    printf("\nFINAL GENERATION:\n");
-    for (int i = 0; i < POPULATION_SIZE * NUMBER_OF_ITEMS; i++){
-          printf(" %.2f ",population[i]);
-          if ((i+1) %NUMBER_OF_ITEMS ==0) {
-            printf("\n");
-          }
-    } 
+
+    t1 = rdtsc();
+
+    printf("\nTotal time \t\t\t\t\t: %.2f \n", (double) (t1-t0));
+    printf("Total Selection time \t\t\t\t: %.2f \n", (double) (selection_total));
+    printf("Total Crossover time \t\t\t\t: %.2f \n", (double) (crossover_total));
+    printf("Total Mutation time \t\t\t\t: %.2f \n", (double) (mutation_total));
+
+
+    printf("Average time per generation \t\t\t: %.2f \n", (double) (t1-t0) / NUMBER_OF_GENERATIONS);
+    printf("Average Selection time per generation \t\t: %.2f \n", (double) (selection_total) / NUMBER_OF_GENERATIONS);
+    printf("Average Crossover time per generation \t\t: %.2f \n", (double) (crossover_total)/ NUMBER_OF_GENERATIONS);
+    printf("Average Mutation time per generation \t\t: %.2f \n", (double) (mutation_total)/ NUMBER_OF_GENERATIONS);
+
+    // printf("\nFINAL GENERATION:\n");
+    // for (int i = 0; i < POPULATION_SIZE * NUMBER_OF_ITEMS; i++){
+    //       printf(" %.2f ",population[i]);
+    //       if ((i+1) %NUMBER_OF_ITEMS ==0) {
+    //         printf("\n");
+    //       }
+    // } 
 
   
   free(population);

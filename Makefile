@@ -12,7 +12,7 @@ compile_play:
 run:
 	./kernel_d.x 512 65536
 
-run_128:
+run128:
 	./kernel_d.x 128 8
 	./kernel_d.x 128 16
 	./kernel_d.x 128 64
@@ -28,7 +28,7 @@ run_128:
 	./kernel_d.x 128 65536
 	./kernel_d.x 128 131072
 
-run_256:
+run256:
 	./kernel_d.x 256 8
 	./kernel_d.x 256 16
 	./kernel_d.x 256 64
@@ -44,7 +44,7 @@ run_256:
 	./kernel_d.x 256 65536
 	./kernel_d.x 256 131072
 
-run_512:
+run512:
 	./kernel_d.x 512 8
 	./kernel_d.x 512 16
 	./kernel_d.x 512 64
@@ -60,7 +60,7 @@ run_512:
 	./kernel_d.x 512 65536
 	./kernel_d.x 512 131072
 
-run_1024:
+run1024:
 	./kernel_d.x 1024 8 
 	./kernel_d.x 1024 16 
 	./kernel_d.x 1024 64 
@@ -76,7 +76,7 @@ run_1024:
 	./kernel_d.x 1024 65536 
 	./kernel_d.x 1024 131072 
 
-run_2048:
+run2048:
 	./kernel_d.x 2048 8 4
 	./kernel_d.x 2048 16 4
 	./kernel_d.x 2048 64 4
@@ -92,7 +92,7 @@ run_2048:
 	./kernel_d.x 2048 65536 4
 	./kernel_d.x 2048 131072 4
 
-run_4096:
+run4096:
 	./kernel_d.x 4096 8 2
 	./kernel_d.x 4096 16 2
 	./kernel_d.x 4096 64 2
@@ -108,7 +108,7 @@ run_4096:
 	./kernel_d.x 4096 65536 2
 	./kernel_d.x 4096 131072 2
 
-run_8192:
+run8192:
 	./kernel_d.x 8192 8 1
 	./kernel_d.x 8192 16 1
 	./kernel_d.x 8192 64 1
@@ -124,7 +124,7 @@ run_8192:
 	./kernel_d.x 8192 65536 1
 	./kernel_d.x 8192 131072 1
 
-run_9986:
+run9986:
 	./kernel_d.x 9986 8 1
 	./kernel_d.x 9986 16 1
 	./kernel_d.x 9986 64 1
@@ -140,11 +140,9 @@ run_9986:
 	./kernel_d.x 9986 65536 1
 	./kernel_d.x 9986 131072 1
 
+runall: run run128 run256 run512 run1024 run2048 run4096 run8192 run9986
 
-run_all:
-	run run_128 run_256 run_512 run_1024 run_2048 run_4096 run_8192 run_9986
-
-run_gen_8192:
+rungen8192:
 	./kernel_d.x 128 8192
 	./kernel_d.x 256 8192
 	./kernel_d.x 512 8192
@@ -153,7 +151,7 @@ run_gen_8192:
 	./kernel_d.x 4096 8192 2
 	./kernel_d.x 8192 8192 1
 
-run_gen_16384:
+rungen16384:
 	./kernel_d.x 128 16384
 	./kernel_d.x 256 16384
 	./kernel_d.x 512 16384
@@ -162,7 +160,7 @@ run_gen_16384:
 	./kernel_d.x 4096 16384 2
 	./kernel_d.x 8192 16384 1
 
-run_gen_32768:
+rungen32768:
 	./kernel_d.x 128 32768
 	./kernel_d.x 256 32768
 	./kernel_d.x 512 32768
@@ -171,7 +169,7 @@ run_gen_32768:
 	./kernel_d.x 4096 32768 2
 	./kernel_d.x 8192 32768 1
 
-run_gen_65536:
+rungen65536:
 	./kernel_d.x 128 65536
 	./kernel_d.x 256 65536
 	./kernel_d.x 512 65536
@@ -180,7 +178,7 @@ run_gen_65536:
 	./kernel_d.x 4096 65536 2
 	./kernel_d.x 8192 65536 1 
 
-run_gen_131072:
+rungen131072:
 	./kernel_d.x 128 131072
 	./kernel_d.x 256 131072
 	./kernel_d.x 512 131072
